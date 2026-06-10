@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vingas VM-tips 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef1f5;--card:#fff;--ink:#1b2531;--muted:#6b7684;--faint:#a7b0bc;--line:#e8ecf1;
+  --green:#0f9d63;--green-soft:#e6f5ee;--gold:#e29a2e;--gold-soft:#fbeed6;
+  --blue:#2f6fed;--swe-blue:#006aa7;--swe-yellow:#ffce1c;--red:#e8604f;
+  --r:16px;--rs:11px;--pill:999px;--sh:0 5px 22px rgba(25,45,75,0.07);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:var(--bg);color:var(--ink);font-family:'Manrope',sans-serif;overflow:hidden;}
+.shell{height:100vh;display:flex;flex-direction:column;padding:14px;gap:11px;}
+/* header */
+.top{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;background:var(--card);border-radius:var(--r);padding:11px 20px;box-shadow:var(--sh);position:relative;overflow:hidden;}
+.top::before{content:'';position:absolute;left:0;top:0;bottom:0;width:6px;background:linear-gradient(180deg,var(--green),#13b58c);}
+.brand{display:flex;align-items:center;gap:13px;}
+.ball{width:42px;height:42px;border-radius:var(--pill);background:linear-gradient(135deg,var(--green),#15bf93);display:flex;align-items:center;justify-content:center;font-size:21px;box-shadow:0 3px 10px rgba(15,157,99,0.32);}
+.brand h1{font-size:24px;font-weight:800;letter-spacing:-0.4px;}
+.brand p{font-size:11px;color:var(--muted);font-weight:500;}
+.tr{display:flex;align-items:center;gap:16px;}
+.swe-mini{display:flex;align-items:center;gap:9px;background:var(--swe-blue);color:#fff;border-radius:var(--pill);padding:6px 14px;}
+.swe-mini .cd{font-size:15px;font-weight:800;color:var(--swe-yellow);}
+.swe-mini .lbl{font-size:9px;opacity:.85;letter-spacing:.5px;}
+.clock{text-align:right;}
+.clock .t{font-size:19px;font-weight:800;}
+.clock .d{font-size:10px;color:var(--muted);text-transform:capitalize;}
+.sync{font-size:9px;color:var(--faint);}
+.sync.live{color:var(--green);}
+/* main */
+.grid{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:1.65fr 1fr;gap:11px;}
+.col{display:flex;flex-direction:column;gap:11px;min-height:0;}
+.card{background:var(--card);border-radius:var(--r);padding:13px 16px;box-shadow:var(--sh);min-height:0;display:flex;flex-direction:column;overflow:hidden;}
+.ch{flex:0 0 auto;display:flex;align-items:center;gap:8px;margin-bottom:9px;}
+.ch h2{font-size:14px;font-weight:700;}
+.ch .ic{width:23px;height:23px;border-radius:8px;background:var(--green-soft);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:13px;}
+.ch.gold .ic{background:var(--gold-soft);color:var(--gold);}
+.ch.blue .ic{background:#e6effe;color:var(--blue);}
+.ch .hint{margin-left:auto;font-size:10px;color:var(--faint);font-weight:500;}
+/* leaderboard */
+.lbwrap{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;}
+.lbhead,.lbrow{display:grid;grid-template-columns:26px 1fr 52px 44px 64px 52px;align-items:center;gap:12px;}
+.lbhead{flex:0 0 auto;padding:0 11px 6px;border-bottom:1px solid var(--line);}
+.lbhead div{font-size:10px;color:var(--faint);font-weight:600;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;}
+.lbhead .r,.lbrow .r{text-align:right;}
+.lbhead .c,.lbrow .c{text-align:center;}
+.lbbody{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:5px;padding-top:6px;}
+.lbrow{padding:7px 11px;border-radius:var(--rs);background:#fafbfc;border:1px solid var(--line);}
+.lbrow.lead{background:linear-gradient(90deg,var(--gold-soft),#fff);border-color:#f0d6a4;}
+.rk{font-size:15px;font-weight:800;color:var(--faint);text-align:center;}
+.who{display:flex;align-items:center;gap:9px;min-width:0;}
+.av{width:27px;height:27px;flex:0 0 auto;border-radius:var(--pill);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;}
+.nm{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sub{font-size:13px;font-weight:600;color:var(--muted);text-align:center;}
+.sub small{display:block;font-size:9px;color:var(--faint);font-weight:500;}
+.tot{font-size:21px;font-weight:800;text-align:right;}
+.tot.lead{color:var(--gold);}
+.morert{flex:0 0 auto;text-align:center;font-size:11px;color:var(--faint);padding-top:7px;}
+/* sweden hero */
+.swe-hero{flex:0 0 auto;background:linear-gradient(135deg,var(--swe-blue),#0090d6);border-radius:var(--r);padding:13px 16px;color:#fff;box-shadow:var(--sh);}
+.swe-hero .hl{font-size:10px;letter-spacing:.8px;color:var(--swe-yellow);font-weight:700;margin-bottom:9px;display:flex;align-items:center;gap:6px;}
+.mc{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;}
+.mt{font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px;}
+.mt.aw{flex-direction:row-reverse;text-align:right;}
+.fl{font-size:18px;}
+.sb{font-size:13px;font-weight:700;background:rgba(0,0,0,0.22);border-radius:9px;padding:7px 11px;text-align:center;min-width:64px;}
+.gb{display:inline-block;font-size:9px;font-weight:700;color:#5a4500;background:var(--swe-yellow);border-radius:var(--pill);padding:2px 9px;margin-bottom:8px;}
+.cdrow{display:flex;gap:7px;margin-top:11px;}
+.cdbox{flex:1;background:rgba(255,255,255,0.15);border-radius:10px;padding:7px 4px;text-align:center;}
+.cdbox .n{font-size:19px;font-weight:800;color:var(--swe-yellow);}
+.cdbox .u{font-size:8px;opacity:.8;letter-spacing:.5px;}
+/* upcoming */
+.upwrap{flex:1 1 auto;min-height:0;overflow:hidden;}
+.up{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:9px;padding:6px 2px;border-bottom:1px solid var(--line);font-size:12px;}
+.up:last-child{border-bottom:none;}
+.up .w{font-size:9.5px;color:var(--muted);min-width:72px;}
+.up .w b{display:block;color:var(--ink);font-size:10.5px;font-weight:700;}
+.up .tm{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.up .tm .v{color:var(--faint);font-weight:400;margin:0 4px;}
+.stag{font-size:8px;font-weight:700;background:var(--swe-yellow);color:#5a4500;border-radius:var(--pill);padding:2px 7px;}
+.gtag{font-size:9px;color:var(--faint);font-weight:600;}
+/* specials */
+.sr{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--line);font-size:12.5px;font-weight:500;}
+.sr:last-child{border-bottom:none;}
+.sp{font-size:14px;font-weight:800;color:var(--gold);}
+.ssub{font-size:9px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);font-weight:600;margin:0 0 5px;}
+.dim{color:var(--faint);font-size:12px;}
+/* bottom rolling standings */
+.tick{flex:0 0 auto;background:var(--ink);color:#fff;border-radius:var(--pill);padding:0 18px;height:38px;display:flex;align-items:center;overflow:hidden;}
+.tick .tag{flex:0 0 auto;font-size:10px;font-weight:800;letter-spacing:.6px;color:var(--swe-yellow);text-transform:uppercase;padding-right:14px;margin-right:14px;border-right:1px solid rgba(255,255,255,0.2);}
+.tick .vp{flex:1 1 auto;overflow:hidden;white-space:nowrap;}
+.ti{display:inline-block;animation:scr 40s linear infinite;font-size:13px;font-weight:600;}
+.ti .e{margin-right:26px;}
+.ti .e b{color:var(--swe-yellow);font-weight:800;margin-right:5px;}
+.ti .e i{color:var(--green);font-style:normal;font-weight:800;margin-left:5px;}
+@keyframes scr{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+.note{position:fixed;bottom:10px;right:10px;background:#fff;border:1px solid var(--line);border-radius:9px;padding:5px 10px;font-size:9px;color:var(--faint);box-shadow:var(--sh);}
+/* sweden venue + weather */
+.swe-info{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;font-size:12px;color:rgba(255,255,255,0.92);}
+.swe-info .loc{display:flex;align-items:center;gap:6px;min-width:0;}
+.swe-info .loc b{font-weight:700;}
+.swe-info .wx{display:flex;align-items:center;gap:5px;background:rgba(0,0,0,0.2);border-radius:var(--pill);padding:3px 10px;white-space:nowrap;}
+.swe-info .wx .tmp{font-weight:700;color:var(--swe-yellow);}
+/* group F table */
+.gfhead,.gfrow{display:grid;grid-template-columns:18px 1fr 28px 36px 28px;align-items:center;gap:8px;font-size:12.5px;}
+.gfhead{font-size:9px;color:var(--faint);font-weight:600;text-transform:uppercase;padding:0 4px 5px;border-bottom:1px solid var(--line);}
+.gfrow{padding:6px 4px;border-bottom:1px solid var(--line);}
+.gfrow:last-child{border-bottom:none;}
+.gfrow.swe{background:linear-gradient(90deg,#eaf4fb,#fff);border-radius:8px;}
+.gfpos{text-align:center;color:var(--faint);font-weight:700;}
+.gfteam{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.gfnum{text-align:center;color:var(--muted);}
+.gfp{text-align:center;font-weight:800;color:var(--ink);}
+/* trivia */
+.trivia{font-size:13px;color:var(--ink);line-height:1.45;min-height:38px;display:flex;align-items:center;}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="top">
+    <div class="brand"><div class="ball">⚽</div><div><h1>Vingas VM-tips 2026</h1><p>FIFA World Cup · Canada · Mexico · USA · 11 jun – 19 jul</p></div></div>
+    <div class="tr">
+      <div class="swe-mini"><span style="font-size:17px">🇸🇪</span><div><div class="lbl">SVERIGE OM</div><div class="cd" id="mini-cd">–</div></div></div>
+      <div class="clock"><div class="t" id="clk">–</div><div class="d" id="dt"></div><div class="sync" id="sync">Demo</div></div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="col">
+      <div class="card" style="flex:1 1 auto">
+        <div class="ch gold"><div class="ic">🏆</div><h2>Poängställning</h2><span class="hint" id="lb-hint"></span></div>
+        <div class="lbwrap">
+          <div class="lbhead"><div class="c">#</div><div>Namn</div><div class="c">Grupp</div><div class="c">🇸🇪</div><div class="c">Skytt+VM</div><div class="r">Poäng</div></div>
+          <div class="lbbody" id="lb"></div>
+          <div class="morert" id="more"></div>
+        </div>
+      </div>
+      <div class="card" style="flex:0 0 auto"><div class="ch gold"><div class="ic">💬</div><h2>Så har vi tippat</h2></div><div class="trivia" id="trivia"></div></div>
+    </div>
+    <div class="col">
+      <div class="swe-hero">
+        <div class="hl"><span style="font-size:14px">🇸🇪</span> SVERIGES NÄSTA MATCH</div>
+        <div id="swe"></div>
+        <div class="swe-info" id="swe-info"></div>
+        <div class="cdrow" id="cd"></div>
+      </div>
+      <div class="card" style="flex:0 0 auto"><div class="ch blue"><div class="ic">📋</div><h2>Grupp F – tabell</h2></div><div id="grpf"><p class="dim">–</p></div></div>
+      <div class="card" style="flex:1 1 auto"><div class="ch"><div class="ic">📅</div><h2>Kommande matcher</h2></div><div class="upwrap" id="upc"></div></div>
+    </div>
+  </div>
+
+  <div class="tick"><div class="tag" id="ticktag">Ställning</div><div class="vp"><span class="ti" id="tickt"></span></div></div>
+</div>
+<div class="note" id="note"></div>
+<script>
+const FIX=[
+ ['A','Mexico','South Africa','2026-06-11T21:00'],['A','South Korea','Czechia','2026-06-12T04:00'],
+ ['B','Canada','Bosnia and Herzegovina','2026-06-12T21:00'],['D','USA','Paraguay','2026-06-13T03:00'],
+ ['B','Qatar','Switzerland','2026-06-13T21:00'],['C','Brazil','Morocco','2026-06-14T00:00'],
+ ['C','Haiti','Scotland','2026-06-14T03:00'],['D','Australia','Türkiye','2026-06-14T16:00'],
+ ['E','Germany','Curaçao','2026-06-14T19:00'],['F','Netherlands','Japan','2026-06-14T22:00'],
+ ['E','Ivory Coast','Ecuador','2026-06-15T01:00'],['F','Sweden','Tunisia','2026-06-15T04:00'],
+ ['H','Spain','Cape Verde','2026-06-15T18:00'],['G','Belgium','Egypt','2026-06-15T21:00'],
+ ['H','Saudi Arabia','Uruguay','2026-06-16T00:00'],['G','Iran','New Zealand','2026-06-16T03:00'],
+ ['I','France','Senegal','2026-06-16T21:00'],['I','Iraq','Norway','2026-06-17T00:00'],
+ ['J','Argentina','Algeria','2026-06-17T03:00'],['J','Austria','Jordan','2026-06-17T06:00'],
+ ['K','Portugal','DR Congo','2026-06-17T19:00'],['L','England','Croatia','2026-06-17T22:00'],
+ ['L','Ghana','Panama','2026-06-18T01:00'],['K','Uzbekistan','Colombia','2026-06-18T04:00'],
+ ['A','Czechia','South Africa','2026-06-18T18:00'],['B','Switzerland','Bosnia and Herzegovina','2026-06-18T21:00'],
+ ['B','Canada','Qatar','2026-06-19T00:00'],['A','Mexico','South Korea','2026-06-19T03:00'],
+ ['D','USA','Australia','2026-06-19T21:00'],['C','Scotland','Morocco','2026-06-20T00:00'],
+ ['C','Brazil','Haiti','2026-06-20T03:00'],['D','Türkiye','Paraguay','2026-06-20T06:00'],
+ ['F','Netherlands','Sweden','2026-06-20T19:00'],['E','Germany','Ivory Coast','2026-06-20T22:00'],
+ ['E','Ecuador','Curaçao','2026-06-21T01:00'],['F','Tunisia','Japan','2026-06-21T06:00'],
+ ['G','Belgium','Iran','2026-06-21T21:00'],['H','Spain','Saudi Arabia','2026-06-21T18:00'],
+ ['G','New Zealand','Egypt','2026-06-22T03:00'],['H','Uruguay','Cape Verde','2026-06-22T00:00'],
+ ['I','France','Iraq','2026-06-22T21:00'],['I','Norway','Senegal','2026-06-23T00:00'],
+ ['J','Argentina','Austria','2026-06-23T03:00'],['J','Jordan','Algeria','2026-06-23T06:00'],
+ ['K','Portugal','Uzbekistan','2026-06-23T19:00'],['L','England','Ghana','2026-06-23T22:00'],
+ ['L','Panama','Croatia','2026-06-24T01:00'],['K','Colombia','DR Congo','2026-06-24T04:00'],
+ ['A','Czechia','Mexico','2026-06-24T21:00'],['A','South Africa','South Korea','2026-06-24T21:00'],
+ ['B','Switzerland','Canada','2026-06-25T00:00'],['B','Bosnia and Herzegovina','Qatar','2026-06-25T00:00'],
+ ['D','Australia','Paraguay','2026-06-25T03:00'],['D','Türkiye','USA','2026-06-25T03:00'],
+ ['C','Haiti','Morocco','2026-06-25T21:00'],['C','Scotland','Brazil','2026-06-25T21:00'],
+ ['E','Ecuador','Germany','2026-06-25T22:00'],['E','Curaçao','Ivory Coast','2026-06-25T22:00'],
+ ['F','Japan','Sweden','2026-06-26T01:00'],['F','Tunisia','Netherlands','2026-06-26T01:00'],
+ ['G','Egypt','Iran','2026-06-27T05:00'],['G','New Zealand','Belgium','2026-06-27T05:00'],
+ ['H','Cape Verde','Saudi Arabia','2026-06-27T02:00'],['H','Uruguay','Spain','2026-06-27T02:00'],
+ ['I','Norway','France','2026-06-26T21:00'],['I','Senegal','Iraq','2026-06-26T21:00'],
+ ['J','Algeria','Austria','2026-06-28T04:00'],['J','Jordan','Argentina','2026-06-28T04:00'],
+ ['K','Colombia','Portugal','2026-06-28T01:30'],['K','DR Congo','Uzbekistan','2026-06-28T01:30'],
+ ['L','Panama','England','2026-06-27T23:00'],['L','Croatia','Ghana','2026-06-27T23:00']
+];
+/* ── KONFIG ── Klistra in ert Google Sheets-ID för live-data (annars demo). */
+const SHEET_ID="1cMBisXaUi_EBmXYH6MAA1hZsijGCMLt1LdMl0NYn6wk";
+const TAB_TIPS="Tips";      // formulärsvar
+const TAB_FACIT="Facit";    // facit (du fyller i / Apps Script fyller i)
+const TAB_GRPF="GruppF";    // Grupp F-tabell (Apps Script fyller i)
+const MAX_ROWS=10;          // antal rader som visas i tavlan (resten rullar i nederkant)
+
+const GROUPS={A:['Mexico','South Africa','South Korea','Czechia'],B:['Canada','Bosnia and Herzegovina','Qatar','Switzerland'],C:['Brazil','Morocco','Haiti','Scotland'],D:['USA','Paraguay','Australia','Türkiye'],E:['Germany','Curaçao','Ivory Coast','Ecuador'],F:['Netherlands','Japan','Sweden','Tunisia'],G:['Belgium','Egypt','Iran','New Zealand'],H:['Spain','Cape Verde','Saudi Arabia','Uruguay'],I:['France','Senegal','Iraq','Norway'],J:['Argentina','Algeria','Austria','Jordan'],K:['Portugal','DR Congo','Uzbekistan','Colombia'],L:['England','Croatia','Ghana','Panama']};
+const GK=Object.keys(GROUPS);
+const FLAGS={'Mexico':'🇲🇽','South Africa':'🇿🇦','South Korea':'🇰🇷','Czechia':'🇨🇿','Canada':'🇨🇦','Bosnia and Herzegovina':'🇧🇦','Qatar':'🇶🇦','Switzerland':'🇨🇭','Brazil':'🇧🇷','Morocco':'🇲🇦','Haiti':'🇭🇹','Scotland':'🏴󠁧󠁢󠁳󠁣󠁴󠁿','USA':'🇺🇸','Paraguay':'🇵🇾','Australia':'🇦🇺','Türkiye':'🇹🇷','Germany':'🇩🇪','Curaçao':'🇨🇼','Ivory Coast':'🇨🇮','Ecuador':'🇪🇨','Netherlands':'🇳🇱','Japan':'🇯🇵','Sweden':'🇸🇪','Tunisia':'🇹🇳','Belgium':'🇧🇪','Egypt':'🇪🇬','Iran':'🇮🇷','New Zealand':'🇳🇿','Spain':'🇪🇸','Cape Verde':'🇨🇻','Saudi Arabia':'🇸🇦','Uruguay':'🇺🇾','France':'🇫🇷','Senegal':'🇸🇳','Iraq':'🇮🇶','Norway':'🇳🇴','Argentina':'🇦🇷','Algeria':'🇩🇿','Austria':'🇦🇹','Jordan':'🇯🇴','Portugal':'🇵🇹','DR Congo':'🇨🇩','Uzbekistan':'🇺🇿','Colombia':'🇨🇴','England':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','Croatia':'🇭🇷','Ghana':'🇬🇭','Panama':'🇵🇦'};
+const fl=t=>FLAGS[t]||'🏳️';
+const EN2SV={'Mexico':'Mexiko','South Africa':'Sydafrika','South Korea':'Sydkorea','Czechia':'Tjeckien','Canada':'Kanada','Bosnia and Herzegovina':'Bosnien-Hercegovina','Qatar':'Qatar','Switzerland':'Schweiz','Brazil':'Brasilien','Morocco':'Marocko','Haiti':'Haiti','Scotland':'Skottland','USA':'USA','Paraguay':'Paraguay','Australia':'Australien','Türkiye':'Turkiet','Germany':'Tyskland','Curaçao':'Curaçao','Ivory Coast':'Elfenbenskusten','Ecuador':'Ecuador','Netherlands':'Nederländerna','Japan':'Japan','Sweden':'Sverige','Tunisia':'Tunisien','Belgium':'Belgien','Egypt':'Egypten','Iran':'Iran','New Zealand':'Nya Zeeland','Spain':'Spanien','Cape Verde':'Kap Verde','Saudi Arabia':'Saudiarabien','Uruguay':'Uruguay','France':'Frankrike','Senegal':'Senegal','Iraq':'Irak','Norway':'Norge','Argentina':'Argentina','Algeria':'Algeriet','Austria':'Österrike','Jordan':'Jordanien','Portugal':'Portugal','DR Congo':'DR Kongo','Uzbekistan':'Uzbekistan','Colombia':'Colombia','England':'England','Croatia':'Kroatien','Ghana':'Ghana','Panama':'Panama'};
+const sv=t=>EN2SV[t]||t;
+const SWE='Sweden';
+const SWKEYS=['swe_tun','ned_swe','jpn_swe'];
+
+const SWE_VENUE={
+  'Tunisia':{v:'Estadio BBVA',c:'Guadalupe, Mexiko',lat:25.6694,lon:-100.2444},
+  'Netherlands':{v:'NRG Stadium',c:'Houston, Texas',lat:29.6847,lon:-95.4107},
+  'Japan':{v:'AT&T Stadium',c:'Arlington, Texas',lat:32.7473,lon:-97.0945}
+};
+
+const _seq={};
+const M=FIX.map(([g,h,a,dt])=>{_seq[g]=(_seq[g]||0)+1;return{id:`${g}${_seq[g]}`,grupp:g,home:h,away:a,dt:new Date(dt),swe:(h===SWE||a===SWE)};});
+const SWE_MATCHES=M.filter(m=>m.swe).sort((a,b)=>a.dt-b.dt);
+
+/* tipsfakta genereras dynamiskt – se buildTipFacts() */
+
+function demoGrpF(){return ['Netherlands','Japan','Tunisia','Sweden'].map(t=>({team:t,gp:0,w:0,d:0,l:0,gd:0,p:0}));}
+const REAL_PLAYERS=["Andreas", "Sara Claesson", "Marcus", "Hanna", "Alexander Carlsson", "Jessica", "Chrille", "Micke \"Mr VM\" Thorén", "Jennifer Lebedev", "Ewelina Karlsson", "Anna Ekberg", "Emelie", "Linda", "Hilde", "Moa ''Niva'' Kullander", "Sibban, dubbelfinten Elf", "Malin", "Amanda Malmgren", "Alexander Tiholt", "Jossan", "Nelly Schroth"];
+const REAL_TIPS={"Andreas": {"swe_tun": {"h": 0, "a": 1}, "ned_swe": {"h": 3, "a": 0}, "jpn_swe": {"h": 1, "a": 1}}, "Sara Claesson": {"swe_tun": {"h": 1, "a": 0}, "ned_swe": {"h": 2, "a": 0}, "jpn_swe": {"h": 2, "a": 2}}, "Marcus": {"swe_tun": {"h": 0, "a": 0}, "ned_swe": {"h": 1, "a": 0}, "jpn_swe": {"h": 0, "a": 0}}, "Hanna": {"swe_tun": {"h": 2, "a": 0}, "ned_swe": {"h": 1, "a": 2}, "jpn_swe": {"h": 1, "a": 1}}, "Alexander Carlsson": {"swe_tun": {"h": 2, "a": 1}, "ned_swe": {"h": 2, "a": 0}, "jpn_swe": {"h": 1, "a": 1}}, "Jessica": {"swe_tun": {"h": 3, "a": 2}, "ned_swe": {"h": 3, "a": 1}, "jpn_swe": {"h": 1, "a": 1}}, "Chrille": {"swe_tun": {"h": 1, "a": 1}, "ned_swe": {"h": 0, "a": 1}, "jpn_swe": {"h": 2, "a": 0}}, "Micke \"Mr VM\" Thorén": {"swe_tun": {"h": 3, "a": 1}, "ned_swe": {"h": 4, "a": 1}, "jpn_swe": {"h": 2, "a": 1}}, "Jennifer Lebedev": {"swe_tun": {"h": 2, "a": 1}, "ned_swe": {"h": 2, "a": 0}, "jpn_swe": {"h": 2, "a": 1}}, "Ewelina Karlsson": {"swe_tun": {"h": 3, "a": 2}, "ned_swe": {"h": 1, "a": 0}, "jpn_swe": {"h": 0, "a": 1}}, "Anna Ekberg": {"swe_tun": {"h": 3, "a": 2}, "ned_swe": {"h": 2, "a": 1}, "jpn_swe": {"h": 1, "a": 1}}, "Emelie": {"swe_tun": {"h": 3, "a": 2}, "ned_swe": {"h": 1, "a": 2}, "jpn_swe": {"h": 4, "a": 2}}, "Linda": {"swe_tun": {"h": 2, "a": 0}, "ned_swe": {"h": 1, "a": 1}, "jpn_swe": {"h": 3, "a": 1}}, "Hilde": {"swe_tun": {"h": 1, "a": 1}, "ned_swe": {"h": 3, "a": 1}, "jpn_swe": {"h": 1, "a": 2}}, "Moa ''Niva'' Kullander": {"swe_tun": {"h": 1, "a": 0}, "ned_swe": {"h": 2, "a": 1}, "jpn_swe": {"h": 1, "a": 1}}, "Sibban, dubbelfinten Elf": {"swe_tun": {"h": 3, "a": 0}, "ned_swe": {"h": 1, "a": 1}, "jpn_swe": {"h": 2, "a": 1}}, "Malin": {"swe_tun": {"h": 2, "a": 1}, "ned_swe": {"h": 2, "a": 2}, "jpn_swe": {"h": 1, "a": 1}}, "Amanda Malmgren": {"swe_tun": {"h": 2, "a": 2}, "ned_swe": {"h": 3, "a": 2}, "jpn_swe": {"h": 1, "a": 2}}, "Alexander Tiholt": {"swe_tun": {"h": 3, "a": 1}, "ned_swe": {"h": 2, "a": 2}, "jpn_swe": {"h": 2, "a": 1}}, "Jossan": {"swe_tun": {"h": 3, "a": 2}, "ned_swe": {"h": 2, "a": 1}, "jpn_swe": {"h": 3, "a": 1}}, "Nelly Schroth": {"swe_tun": {"h": 1, "a": 0}, "ned_swe": {"h": 0, "a": 0}, "jpn_swe": {"h": 1, "a": 1}}};
+const REAL_EXTRA={"Andreas": {"gw": {"A": "Czechia", "B": "Switzerland", "C": "Brazil", "D": "Türkiye", "E": "Germany", "F": "Netherlands", "G": "Belgium", "H": "Spain", "I": "France", "J": "Argentina", "K": "Portugal", "L": "Croatia"}, "scorer": "Neymar", "winner": "Brazil", "final": ["Argentina", "Brazil"]}, "Sara Claesson": {"gw": {"A": "South Korea", "B": "Switzerland", "C": "Brazil", "D": "USA", "E": "Germany", "F": "Netherlands", "G": "Belgium", "H": "Spain", "I": "France", "J": "Argentina", "K": "Portugal", "L": "England"}, "scorer": "Messi", "winner": "Argentina", "final": ["Argentina", "Spain"]}, "Marcus": {"gw": {"A": "Mexico", "B": "Switzerland", "C": "Brazil", "D": "USA", "E": "Germany", "F": "Netherlands", "G": "Belgium", "H": "Uruguay", "I": "France", "J": "Argentina", "K": "Portugal", "L": "England"}, "scorer": "Van Der Klompen Stompen", "winner": "Netherlands", "final": ["Netherlands", "USA"]}, "Hanna": {"gw": {"A": "Mexico", "B": "Switzerland", "C": "Brazil", "D": "Australia", "E": "Germany", "F": "Netherlands", "G": "Belgium", "H": "Spain", "I": "France", "J": "Argentina", "K": "Portugal", "L": "England"}, "scorer": "Cristiano Ronaldo", "winner": "Spain", "final": ["Spain", "France"]}, "Alexander Carlsson": {"gw": {"A": "South Korea", "B": "Switzerland", "C": "Brazil", "D": "Türkiye", "E": "Germany", "F": "Netherlands", "G": "Belgium", "H": "Spain", "I": "France", "J": "Argentina", "K": "Portugal", "L": "England"}, "scorer": "Kylian Mbappé", "winner": "Spain", "final": ["Spain", "Brazil"]}, "Jessica": {"gw": {"A": "Mexico", "B": "Switzerland", "C": "Brazil", "D": "Türkiye", "E": "Germany", "F": "Netherlands", "G": "Belgium", "H": "Spain", "I": "France", "J": "Argentina", "K": "Colombia", "L": "England"}, "scorer": "Dembélé", "winner": "France", "final": ["France", "Brazil"]}, "Chrille": {"gw": {"A": "Mexico", "B": "Switzerland", "C": "Morocco", "D": "Türkiye", "E": "Ivory Coast", "F": "Japan", "G": "Belgium", "H": "Spain", "I": "France", "J": "Argentina", "K": "Portugal", "L": "Croatia"}, "scorer": "Kylian Mbappé", "winner": "France", "final": ["Japan", "France"]}, "Micke \"Mr VM\" Thorén": {"gw": {"A": "Mexico", "B": "Switzerland", "C": "Brazil", "D": "Türkiye", "E": "Germany", "F": "Netherlands", "G": "Belgium", "H": "Spain", "I": "Norway", "J": "Argentina", "K": "Portugal", "L": "England"}, "scorer": "Harry Kane", "winner": "Spain", "final": ["Spain", "England"]}, "Jennifer Lebedev": {"gw": {"A": "Mexico", "B": "Switzerland", "C": "Brazil", "D": "Paraguay", "E": "Germany", "F": "Netherlands", "G": "Belgium", "H": "Spain", "I": "France", "J": "Argentina", "K": "Portugal", "L": "England"}, "scorer": "Kylian Mbappé", "winner": "France", "final": ["Spain", "France"]}, "Ewelina Karlsson": {"gw": {"A": "Mexico", "B": "Switzerland", "C": "Brazil", "D": "USA", "E": "Germany", "F": "Netherlands", "G": "Belgium", "H": "Spain", "I": "France", "J": "Argentina", "K": "Portugal", "L": "England"}, "scorer": "Håland", "winner": "Brazil", "final": ["France", "Brazil"]}, "Anna Ekberg": {"gw": {"A": "South Africa", "B": "Canada", "C": "Brazil", "D": "USA", "E": "Germany", "F": "Netherlands", "G": "Belgium", "H": "Spain", "I": "France", "J": "Algeria", "K": "Portugal", "L": "England"}, "scorer": "Lamine Yamal", "winner": "Spain", "final": ["Spain", "France"]}, "Emelie": {"gw": {"A": "Mexico", "B": "Switzerland", "C": "Brazil", "D": "USA", "E": "Ecuador", "F": "Japan", "G": "Belgium", "H": "Spain", "I": "Norway", "J": "Austria", "K": "Portugal", "L": "England"}, "scorer": "Cristian Roldan", "winner": "USA", "final": ["Japan", "USA"]}, "Linda": {"gw": {"A": "Mexico", "B": "Switzerland", "C": "Brazil", "D": "Türkiye", "E": "Germany", "F": "Japan", "G": "Belgium", "H": "Spain", "I": "France", "J": "Argentina", "K": "Portugal", "L": "England"}, "scorer": "Kylian Mbappé", "winner": "Spain", "final": ["England", "Spain"]}, "Hilde": {"gw": {"A": "South Korea", "B": "Switzerland", "C": "Morocco", "D": "Paraguay", "E": "Germany", "F": "Netherlands", "G": "Belgium", "H": "Spain", "I": "Norway", "J": "Austria", "K": "Colombia", "L": "England"}, "scorer": "Erling Braut Haaland", "winner": "Norway", "final": ["Norway", "Germany"]}, "Moa ''Niva'' Kullander": {"gw": {"A": "Mexico", "B": "Switzerland", "C": "Brazil", "D": "USA", "E": "Germany", "F": "Netherlands", "G": "Belgium", "H": "Spain", "I": "France", "J": "Argentina", "K": "Portugal", "L": "England"}, "scorer": "Kylian Mbappé", "winner": "Spain", "final": ["Spain", "France"]}, "Sibban, dubbelfinten Elf": {"gw": {"A": "Mexico", "B": "Switzerland", "C": "Brazil", "D": "Paraguay", "E": "Germany", "F": "Japan", "G": "Belgium", "H": "Spain", "I": "France", "J": "Argentina", "K": "Portugal", "L": "England"}, "scorer": "Kylian Mbappé", "winner": "France", "final": ["France", "England"]}, "Malin": {"gw": {"A": "Mexico", "B": "Switzerland", "C": "Brazil", "D": "Paraguay", "E": "Germany", "F": "Netherlands", "G": "Belgium", "H": "Spain", "I": "France", "J": "Argentina", "K": "Portugal", "L": "England"}, "scorer": "Mbappé", "winner": "Spain", "final": ["Spain", "France"]}, "Amanda Malmgren": {"gw": {"A": "Mexico", "B": "Switzerland", "C": "Brazil", "D": "USA", "E": "Germany", "F": "Netherlands", "G": "Belgium", "H": "Saudi Arabia", "I": "France", "J": "Argentina", "K": "Portugal", "L": "England"}, "scorer": "Kylian Mbappé", "winner": "Brazil", "final": ["Brazil", "England"]}, "Alexander Tiholt": {"gw": {"A": "Mexico", "B": "Switzerland", "C": "Brazil", "D": "Türkiye", "E": "Germany", "F": "Japan", "G": "Belgium", "H": "Spain", "I": "France", "J": "Argentina", "K": "Portugal", "L": "England"}, "scorer": "Lamine Yamal", "winner": "Spain", "final": ["Spain", "Portugal"]}, "Jossan": {"gw": {"A": "Czechia", "B": "Canada", "C": "Brazil", "D": "USA", "E": "Germany", "F": "Sweden", "G": "Belgium", "H": "Spain", "I": "France", "J": "Argentina", "K": "Portugal", "L": "England"}, "scorer": "Kylian Mbappé", "winner": "Sweden", "final": ["USA", "Sweden"]}, "Nelly Schroth": {"gw": {"A": "Czechia", "B": "Switzerland", "C": "Brazil", "D": "USA", "E": "Germany", "F": "Netherlands", "G": "Belgium", "H": "Spain", "I": "France", "J": "Argentina", "K": "Portugal", "L": "England"}, "scorer": "Kylian Mbappé", "winner": "France", "final": ["Spain", "France"]}};
+function emptyFacit(){return {gw:{},scorer:'',winner:'',swe:{}};}
+function realData(){return {players:REAL_PLAYERS,tips:REAL_TIPS,extra:REAL_EXTRA,facit:emptyFacit(),grpf:demoGrpF()};}
+
+function sweScore(t,f){if(!t||!f||f.h==null)return null;if(t.h===f.h&&t.a===f.a)return 3;const fw=f.h>f.a?'H':f.h<f.a?'A':'D',tw=t.h>t.a?'H':t.h<t.a?'A':'D';return fw===tw?1:0;}
+function calc(D,p){const e=D.extra[p]||{gw:{}},t=D.tips[p]||{},f=D.facit;let gw=0,gok=0,gres=0,sv=0,sp=0,scOk=false,wcOk=false;
+  GK.forEach(g=>{const fwn=f.gw&&f.gw[g];if(fwn){gres++;if(e.gw&&e.gw[g]===fwn){gw+=5;gok++;}}});
+  SWKEYS.forEach(k=>{const r=sweScore(t[k],f.swe&&f.swe[k]);if(r!=null)sv+=r;});
+  if(f.scorer&&e.scorer&&e.scorer.toLowerCase().trim()===f.scorer.toLowerCase().trim()){sp+=10;scOk=true;}
+  if(f.winner&&e.winner&&e.winner===f.winner){sp+=20;wcOk=true;}
+  return{total:gw+sv+sp,gw,gok,gres,sv,sp,scOk,wcOk};}
+function avc(n){let h=0;for(const c of n)h=(h*31+c.charCodeAt(0))%360;return `hsl(${h},52%,52%)`;}
+function ini(n){return n.split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase();}
+
+let nextSwe=null;
+function clk(){const n=new Date();document.getElementById('clk').textContent=n.toLocaleTimeString('sv-SE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});document.getElementById('dt').textContent=n.toLocaleDateString('sv-SE',{weekday:'long',day:'numeric',month:'long'});cd();}
+function cd(){if(!nextSwe){document.getElementById('mini-cd').textContent='–';return;}const d=nextSwe.dt-new Date();if(d<=0){document.getElementById('mini-cd').textContent='NU';document.getElementById('cd').innerHTML='';return;}
+  const D=Math.floor(d/864e5),h=Math.floor(d%864e5/36e5),m=Math.floor(d%36e5/6e4),s=Math.floor(d%6e4/1e3);
+  document.getElementById('mini-cd').textContent=D>0?`${D}d ${h}h`:`${h}h ${m}m`;
+  document.getElementById('cd').innerHTML=[[D,'DAGAR'],[h,'TIM'],[m,'MIN'],[s,'SEK']].map(([n,u])=>`<div class="cdbox"><div class="n">${String(n).padStart(2,'0')}</div><div class="u">${u}</div></div>`).join('');}
+setInterval(clk,1000);
+
+function whenTxt(d){const days=['sön','mån','tis','ons','tor','fre','lör'];return `<b>${days[d.getDay()]} ${d.getDate()}/${d.getMonth()+1}</b>${d.toLocaleTimeString('sv-SE',{hour:'2-digit',minute:'2-digit'})}`;}
+function mcHero(mt){return `<span class="gb">Grupp ${mt.grupp}</span><div class="mc"><div class="mt">${fl(mt.home)} <span>${mt.home}</span></div><div class="sb">${mt.dt.toLocaleDateString('sv-SE',{day:'numeric',month:'short'})} · ${mt.dt.toLocaleTimeString('sv-SE',{hour:'2-digit',minute:'2-digit'})}</div><div class="mt aw"><span>${mt.away}</span> ${fl(mt.away)}</div></div>`;}
+
+const WX={0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌦️',53:'🌦️',55:'🌧️',61:'🌧️',63:'🌧️',65:'🌧️',71:'🌨️',73:'🌨️',75:'❄️',80:'🌦️',81:'🌧️',82:'⛈️',95:'⛈️',96:'⛈️',99:'⛈️'};
+let WX_VENUE=null;
+async function loadWeather(opp){
+  const info=document.getElementById('swe-info');const v=SWE_VENUE[opp];
+  if(!v){info.innerHTML='';return;}
+  info.innerHTML=`<span class="loc">📍 <b>${v.v}</b> · ${v.c}</span>`;
+  if(WX_VENUE===opp)return;
+  WX_VENUE=opp;
+  try{
+    const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${v.lat}&longitude=${v.lon}&current=temperature_2m,weather_code&timezone=auto`);
+    const j=await r.json();const t=Math.round(j.current.temperature_2m);const ic=WX[j.current.weather_code]||'🌡️';
+    info.innerHTML=`<span class="loc">📍 <b>${v.v}</b> · ${v.c}</span><span class="wx">${ic} <span class="tmp">${t}°</span></span>`;
+  }catch(e){WX_VENUE=null;}
+}
+
+function parseCSV(t){const rows=[];let r=[],v='',q=false;for(let i=0;i<t.length;i++){const c=t[i];if(q){if(c==='"'){if(t[i+1]==='"'){v+='"';i++;}else q=false;}else v+=c;}else{if(c==='"')q=true;else if(c===','){r.push(v);v='';}else if(c==='\n'){r.push(v);rows.push(r);r=[];v='';}else if(c==='\r'){}else v+=c;}}if(v!==''||r.length){r.push(v);rows.push(r);}return rows;}
+async function tab(n){const u=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(n)}`;const r=await fetch(u);if(!r.ok)throw 0;return parseCSV(await r.text());}
+function pscore(s){if(!s)return null;const m=(''+s).match(/(\d+)\s*[-–:]\s*(\d+)/);return m?{h:+m[1],a:+m[2]}:null;}
+
+function parseFacit(facitRows){
+  const facit={gw:{},scorer:'',winner:'',swe:{}};
+  facitRows.forEach(r=>{const k=(r[0]||'').trim(),v=(r[1]||'').trim();if(!k)return;
+    if(GROUPS[k])facit.gw[k]=v;else if(/skytt/i.test(k))facit.scorer=v;else if(/vm/i.test(k))facit.winner=v;
+    else if(/tunis/i.test(k))facit.swe.swe_tun=pscore(v);else if(/nederl/i.test(k))facit.swe.ned_swe=pscore(v);else if(/japan/i.test(k))facit.swe.jpn_swe=pscore(v);});
+  return facit;
+}
+function parseGrpF(rows){
+  const out=[];rows.forEach(r=>{const team=(r[0]||'').trim();if(!team||/lag/i.test(team))return;
+    out.push({team,gp:+r[1]||0,w:+r[2]||0,d:+r[3]||0,l:+r[4]||0,gd:+r[5]||0,p:+r[6]||0});});
+  return out.length?out:demoGrpF();
+}
+
+function renderGrpF(g){
+  const el=document.getElementById('grpf');if(!g||!g.length){el.innerHTML='<p class="dim">–</p>';return;}
+  el.innerHTML=`<div class="gfhead"><span class="gfpos"></span><span class="gfteam">Lag</span><span class="gfnum">S</span><span class="gfnum">MS</span><span class="gfp">P</span></div>`+
+    g.map((r,i)=>`<div class="gfrow ${r.team==='Sweden'?'swe':''}"><span class="gfpos">${i+1}</span><span class="gfteam">${fl(r.team)} ${r.team}</span><span class="gfnum">${r.gp}</span><span class="gfnum">${r.gd>0?'+':''}${r.gd}</span><span class="gfp">${r.p}</span></div>`).join('');
+}
+
+function render(D){
+  const now=new Date();
+  const playedMap={};SWE_MATCHES.forEach((m,i)=>{const r=D.facit.swe&&D.facit.swe[SWKEYS[i]];if(r&&r.h!=null)playedMap[m.id]=r;});
+  const rk=D.players.map(p=>({p,s:calc(D,p)})).sort((a,b)=>b.s.total-a.s.total);
+  const med=['🥇','🥈','🥉'];
+  const shown=rk.slice(0,MAX_ROWS);
+  document.getElementById('lb').innerHTML=shown.map((r,i)=>{const lead=i===0;
+    return `<div class="lbrow ${lead?'lead':''}"><div class="rk">${med[i]||i+1}</div>
+      <div class="who"><div class="av" style="background:${avc(r.p)}">${ini(r.p)}</div><div class="nm">${r.p}</div></div>
+      <div class="sub">${r.s.gw}<small>${r.s.gok}/12 rätt</small></div>
+      <div class="sub">${r.s.sv}<small>av 9</small></div>
+      <div class="sub">${r.s.sp}<small>${[r.s.wcOk?'VM':'',r.s.scOk?'⚽':''].filter(Boolean).join(' ')||'–'}</small></div>
+      <div class="tot ${lead?'lead':''}">${r.s.total}</div></div>`;}).join('')||'<p class="dim" style="padding:8px">Inga deltagare ännu.</p>';
+  document.getElementById('more').textContent=rk.length>MAX_ROWS?`+ ${rk.length-MAX_ROWS} till – hela ställningen rullar nedan ↓`:'';
+  document.getElementById('lb-hint').textContent=`${rk.length} deltagare`;
+
+  nextSwe=SWE_MATCHES.filter(m=>!playedMap[m.id]&&m.dt>now)[0]||SWE_MATCHES.filter(m=>!playedMap[m.id])[0];
+  if(nextSwe){document.getElementById('swe').innerHTML=mcHero(nextSwe);loadWeather(nextSwe.home===SWE?nextSwe.away:nextSwe.home);}
+  else{document.getElementById('swe').innerHTML='<p style="font-size:13px">Sveriges gruppspel är spelat 🇸🇪</p>';document.getElementById('swe-info').innerHTML='';document.getElementById('cd').innerHTML='';}
+  cd();
+
+  renderGrpF(D.grpf||demoGrpF());
+
+  const upc=M.filter(m=>m.dt>now).sort((a,b)=>a.dt-b.dt).slice(0,4);
+  document.getElementById('upc').innerHTML=upc.map(m=>`<div class="up"><div class="w">${whenTxt(m.dt)}</div><div class="tm">${fl(m.home)} ${m.home}<span class="v">–</span>${m.away} ${fl(m.away)}</div><div>${m.swe?'<span class="stag">SVE</span>':`<span class="gtag">${m.grupp}</span>`}</div></div>`).join('')||'<p class="dim">Gruppspelet klart.</p>';
+
+  LASTRK=rk;
+  applyTicker();
+  startTickerRotation();
+}
+
+function buildTipsspaning(){
+  const D=DATA;if(!D||!D.players.length)return '';
+  const sc={},wc={},gwCount={};D.players.forEach(p=>{const e=D.extra[p]||{};if(e.scorer)sc[e.scorer]=(sc[e.scorer]||0)+1;if(e.winner)wc[e.winner]=(wc[e.winner]||0)+1;GK.forEach(g=>{const t=e.gw&&e.gw[g];if(t){const k=g+'|'+t;gwCount[k]=(gwCount[k]||0)+1;}});});
+  const tW=Object.entries(wc).sort((a,b)=>b[1]-a[1])[0],tS=Object.entries(sc).sort((a,b)=>b[1]-a[1])[0];
+  const lone=Object.entries(gwCount).filter(([k,v])=>v===1).map(([k])=>k)[0];
+  const e=[];
+  if(tW)e.push(`Mest tippad VM-vinnare: ${fl(tW[0])} ${tW[0]} (${tW[1]}×)`);
+  if(tS)e.push(`Mest tippad skyttekung: ${tS[0]} (${tS[1]}×)`);
+  e.push(`Tror på Sverige hela vägen: ${wc['Sweden']||0} st`);
+  if(lone){const a=lone.split('|');e.push(`Ensamvarg: bara 1 tror på ${a[1]} som vinnare av grupp ${a[0]}`);}
+  return e.map(x=>`<span class="e">${x}</span>`).join('');
+}
+
+let DATA=realData(),LASTRK=[],TICK_IDX=0,TICK_TIMER=null;
+function sameDay(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();}
+function hhmm(d){return d.toLocaleTimeString('sv-SE',{hour:'2-digit',minute:'2-digit'});}
+function dayDate(d){const days=['sön','mån','tis','ons','tor','fre','lör'];return days[d.getDay()]+' '+d.getDate()+'/'+(d.getMonth()+1);}
+function tickPanels(){
+  const now=new Date(),panels=[];
+  const today=M.filter(m=>sameDay(m.dt,now)).sort((a,b)=>a.dt-b.dt);
+  let dh;
+  if(today.length)dh=today.map(m=>`<span class="e"><b>${hhmm(m.dt)}</b>${fl(m.home)} ${m.home}–${m.away} ${fl(m.away)}${m.swe?' 🇸🇪':''}</span>`).join('');
+  else{const nx=M.filter(m=>m.dt>now).sort((a,b)=>a.dt-b.dt)[0];dh=nx?`<span class="e">Inga matcher idag · nästa ${dayDate(nx.dt)} ${hhmm(nx.dt)}: ${fl(nx.home)} ${nx.home}–${nx.away} ${fl(nx.away)}</span>`:`<span class="e">Turneringen avslutad 🏆</span>`;}
+  panels.push({tag:'Dagens matcher',html:dh,dur:38,dwell:13000});
+  if(LASTRK.length>MAX_ROWS){const s=LASTRK.map((r,i)=>`<span class="e"><b>${i+1}.</b>${r.p}<i>${r.s.total}p</i></span>`).join('');const dur=Math.max(40,Math.round(LASTRK.length*2.6));panels.push({tag:'Hela ställningen',html:s,dur,dwell:dur*1000});}
+  const ts=buildTipsspaning();if(ts)panels.push({tag:'Tipsspaning',html:ts,dur:38,dwell:15000});
+  return panels;
+}
+function applyTicker(){
+  const panels=tickPanels();if(!panels.length)return;
+  TICK_IDX=TICK_IDX%panels.length;const p=panels[TICK_IDX];
+  document.getElementById('ticktag').textContent=p.tag;
+  const el=document.getElementById('tickt');el.innerHTML=p.html+p.html;
+  el.style.animation='none';void el.offsetWidth;el.style.animationDuration=p.dur+'s';el.style.animation='';
+}
+function scheduleNext(){clearTimeout(TICK_TIMER);const panels=tickPanels();const cur=panels[TICK_IDX%panels.length]||{dwell:14000};
+  TICK_TIMER=setTimeout(()=>{TICK_IDX=(TICK_IDX+1)%Math.max(1,tickPanels().length);applyTicker();scheduleNext();},cur.dwell);}
+function startTickerRotation(){if(TICK_TIMER)return;scheduleNext();}
+
+let TIPFACTS=[],TRIV_IDX=0;
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function buildTipFacts(){
+  const D=DATA;if(!D||!D.players.length)return ['Tipsen är inne – snart börjar det!'];
+  const f=[];
+  const wc={},sc={},fc={},gwC={};
+  D.players.forEach(p=>{const e=D.extra[p]||{};
+    if(e.winner)wc[e.winner]=(wc[e.winner]||0)+1;
+    if(e.scorer)sc[e.scorer]=(sc[e.scorer]||0)+1;
+    (e.final||[]).forEach(t=>{if(t)fc[t]=(fc[t]||0)+1;});
+    GK.forEach(g=>{const t=e.gw&&e.gw[g];if(t){const k=g+'|'+t;gwC[k]=(gwC[k]||0)+1;}});});
+  const n=D.players.length;
+  // aggregat
+  const topW=Object.entries(wc).sort((a,b)=>b[1]-a[1]);
+  const topS=Object.entries(sc).sort((a,b)=>b[1]-a[1]);
+  const topF=Object.entries(fc).sort((a,b)=>b[1]-a[1]);
+  if(topF[0])f.push(`${fl(topF[0][0])} ${sv(topF[0][0])} är det mest tippade laget att nå finalen (${topF[0][1]} av ${n})`);
+  if(topF[1])f.push(`${fl(topF[1][0])} ${sv(topF[1][0])} är näst mest tippad finalist (${topF[1][1]} st)`);
+  if(topW[0])f.push(`Flest tror på ${fl(topW[0][0])} ${sv(topW[0][0])} som VM-vinnare (${topW[0][1]} st)`);
+  if(topS[0])f.push(`${topS[0][0]} är den mest tippade skyttekungen (${topS[0][1]} st)`);
+  f.push(`${wc['Sweden']||0} av ${n} tror att Sverige vinner hela VM 🇸🇪`);
+  const sweGrp=Object.entries(gwC).filter(([k])=>k.startsWith('F|Sweden'));
+  if(sweGrp.length)f.push(`${sweGrp[0][1]} st tror Sverige vinner grupp F`);
+  // individuella plock
+  D.players.forEach(p=>{const e=D.extra[p]||{};const t=D.tips[p]||{};
+    if(e.winner)f.push(`${p} tippar ${fl(e.winner)} ${sv(e.winner)} som VM-vinnare`);
+    if(e.scorer)f.push(`${p} tror på ${e.scorer} som skyttekung`);
+    if(t.swe_tun)f.push(`${p} tippade Sverige–Tunisien ${t.swe_tun.h}–${t.swe_tun.a}`);
+    if(e.final&&e.final[0]&&e.final[1])f.push(`${p} tror på finalen ${sv(e.final[0])} – ${sv(e.final[1])}`);});
+  // ensamvargar
+  Object.entries(gwC).filter(([k,v])=>v===1).slice(0,6).forEach(([k])=>{const[g,team]=k.split('|');
+    const who=D.players.find(p=>D.extra[p]&&D.extra[p].gw&&D.extra[p].gw[g]===team);
+    if(who)f.push(`Ensamvarg: bara ${who} tror på ${sv(team)} i grupp ${g}`);});
+  return shuffle(f);
+}
+function rotTriv(){const el=document.getElementById('trivia');if(!el)return;
+  if(!TIPFACTS.length)TIPFACTS=buildTipFacts();
+  el.textContent='💬 '+TIPFACTS[TRIV_IDX%TIPFACTS.length];TRIV_IDX++;
+  if(TRIV_IDX>=TIPFACTS.length){TIPFACTS=buildTipFacts();TRIV_IDX=0;}}
+setInterval(rotTriv,10000);rotTriv();
+
+function paint(){render(DATA);}
+async function load(){const note=document.getElementById('note'),sync=document.getElementById('sync');
+  if(!SHEET_ID){DATA=realData();paint();sync.textContent='Förhandsvisning';note.textContent='Live-resultat tänds när SHEET_ID lagts in';return;}
+  try{const facit=parseFacit(await tab(TAB_FACIT));let grpf=demoGrpF();try{grpf=parseGrpF(await tab(TAB_GRPF));}catch(e){}
+    DATA={players:REAL_PLAYERS,tips:REAL_TIPS,extra:REAL_EXTRA,facit,grpf};
+    paint();sync.textContent='● Live · '+new Date().toLocaleTimeString('sv-SE');sync.classList.add('live');note.textContent='';}
+  catch(e){DATA=realData();paint();sync.textContent='Kunde inte läsa Sheet – kontrollera delning & ID';}}
+load();setInterval(load,60000);
+</script>
+</body>
+</html>
