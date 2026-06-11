@@ -109,6 +109,43 @@ html,body{height:100%;background:var(--bg);color:var(--ink);font-family:'Manrope
 .ti .e i{color:var(--green);font-style:normal;font-weight:800;margin-left:5px;}
 @keyframes scr{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
 .note{position:fixed;bottom:10px;right:10px;background:#fff;border:1px solid var(--line);border-radius:9px;padding:5px 10px;font-size:9px;color:var(--faint);box-shadow:var(--sh);}
+
+/* ───────── MOBIL (scrollbar layout) ───────── */
+@media (max-width:900px){
+  html,body{overflow:auto;height:auto;}
+  .shell{height:auto;min-height:100vh;padding:10px;gap:10px;}
+  .top{flex-wrap:wrap;gap:10px;padding:12px 14px;}
+  .brand h1{font-size:20px;}
+  .brand p{font-size:10px;}
+  .tr{width:100%;justify-content:space-between;}
+  .clock .t{font-size:16px;min-width:84px;}
+  .grid{display:flex;flex-direction:column;gap:10px;}
+  .card{overflow:visible;}
+  .lbwrap{overflow:visible;}
+  .lbbody{overflow:visible;}
+  .lbhead,.lbrow{grid-template-columns:24px 1fr 44px 36px 52px 46px;gap:7px;}
+  .nm{font-size:12.5px;}
+  .tot{font-size:18px;}
+  .sub{font-size:12px;}
+  .sub small{font-size:8px;}
+  .duo{display:flex;flex-direction:column;gap:10px;}
+  .cdrow{flex-wrap:wrap;}
+  .cdbox .n{font-size:17px;}
+  .tick{height:34px;border-radius:14px;}
+  .tick .tag{font-size:9px;padding-right:10px;margin-right:10px;}
+  .ti{font-size:12px;}
+  .note{display:none;}
+  .morert{display:none;}
+}
+@media (max-width:480px){
+  .brand h1{font-size:18px;}
+  .swe-mini{padding:5px 10px;}
+  .swe-mini .cd{font-size:13px;min-width:54px;}
+  .mt{font-size:12px;}
+  .sb{font-size:12px;min-width:56px;padding:6px 8px;}
+  .lbhead,.lbrow{grid-template-columns:22px 1fr 40px 32px 46px 42px;gap:5px;}
+  .av{width:23px;height:23px;font-size:9px;}
+}
 /* sweden venue + weather */
 .swe-info{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;font-size:12px;color:rgba(255,255,255,0.92);}
 .swe-info .loc{display:flex;align-items:center;gap:6px;min-width:0;}
@@ -214,7 +251,8 @@ const TAB_TIPS="Tips";      // formulärsvar
 const TAB_FACIT="Facit";    // facit (du fyller i / Apps Script fyller i)
 const TAB_GRPF="GruppF";    // Grupp F-tabell (Apps Script fyller i)
 const TAB_SCORERS="Skytteliga"; // topp 5 målskyttar (Apps Script fyller i)
-const MAX_ROWS=10;          // antal rader som visas i tavlan (resten rullar i nederkant)
+const IS_MOBILE=(typeof window!=='undefined'&&window.matchMedia&&window.matchMedia('(max-width:900px)').matches);
+const MAX_ROWS=IS_MOBILE?999:10;  // mobil: visa alla (scroll); TV: topp 10 + rullande nederkant
 
 const GROUPS={A:['Mexico','South Africa','South Korea','Czechia'],B:['Canada','Bosnia and Herzegovina','Qatar','Switzerland'],C:['Brazil','Morocco','Haiti','Scotland'],D:['USA','Paraguay','Australia','Türkiye'],E:['Germany','Curaçao','Ivory Coast','Ecuador'],F:['Netherlands','Japan','Sweden','Tunisia'],G:['Belgium','Egypt','Iran','New Zealand'],H:['Spain','Cape Verde','Saudi Arabia','Uruguay'],I:['France','Senegal','Iraq','Norway'],J:['Argentina','Algeria','Austria','Jordan'],K:['Portugal','DR Congo','Uzbekistan','Colombia'],L:['England','Croatia','Ghana','Panama']};
 const GK=Object.keys(GROUPS);
