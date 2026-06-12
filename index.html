@@ -94,7 +94,10 @@ html,body{height:100%;background:var(--bg);color:var(--ink);font-family:'Manrope
 .scr .pl small{font-size:9.5px;color:var(--muted);}
 .scr .gl{font-weight:800;color:var(--gold);font-size:14px;}
 .scr .tipby{font-size:8.5px;color:var(--gold);font-weight:700;}
-.tot .prog{display:block;font-size:8.5px;color:var(--faint);font-weight:700;letter-spacing:.2px;}
+.lb-note{flex:0 0 auto;font-size:10px;color:var(--muted);margin:-3px 0 7px;display:flex;align-items:center;gap:6px;}
+.lb-note .dot{width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block;}
+.totwrap{display:flex;align-items:baseline;justify-content:flex-end;gap:6px;}
+.totwrap .prog{font-size:13px;font-weight:800;color:var(--red);}
 /* specials */
 .sr{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--line);font-size:12.5px;font-weight:500;}
 .sr:last-child{border-bottom:none;}
@@ -182,6 +185,7 @@ html,body{height:100%;background:var(--bg);color:var(--ink);font-family:'Manrope
     <div class="col">
       <div class="card" style="flex:1 1 auto">
         <div class="ch gold"><div class="ic">🏆</div><h2>Poängställning</h2><span class="hint" id="lb-hint"></span></div>
+        <p class="lb-note"><span class="dot"></span>Röd siffra = läget om VM skulle sluta nu (aktuella gruppledare + skytteligaetta)</p>
         <div class="lbwrap">
           <div class="lbhead"><div class="c">#</div><div>Namn</div><div class="c">Grupp</div><div class="c">🇸🇪</div><div class="c">Skytt+VM</div><div class="r">Poäng</div></div>
           <div class="lbbody" id="lb"></div>
@@ -376,9 +380,9 @@ function render(D){
       <div class="sub">${r.s.gw}<small>${r.s.gok}/12 rätt</small></div>
       <div class="sub">${r.s.sv}<small>av 9</small></div>
       <div class="sub">${r.s.sp}<small>${[r.s.wcOk?'VM':'',r.s.scOk?'⚽':''].filter(Boolean).join(' ')||'–'}</small></div>
-      <div class="tot ${lead?'lead':''}">${r.s.total}${r.prog>r.s.total?`<span class="prog">prognos ${r.prog}</span>`:''}</div></div>`;}).join('')||'<p class="dim" style="padding:8px">Inga deltagare ännu.</p>';
+      <div class="totwrap">${r.prog>r.s.total?`<span class="prog">${r.prog}</span>`:''}<span class="tot ${lead?'lead':''}">${r.s.total}</span></div></div>`;}).join('')||'<p class="dim" style="padding:8px">Inga deltagare ännu.</p>';
   document.getElementById('more').textContent=rk.length>MAX_ROWS?`+ ${rk.length-MAX_ROWS} till – hela ställningen rullar nedan ↓`:'';
-  document.getElementById('lb-hint').textContent=`${rk.length} deltagare · lika poäng sorteras på prognos`;
+  document.getElementById('lb-hint').textContent=`${rk.length} deltagare`;
 
   nextSwe=SWE_MATCHES.filter(m=>!playedMap[m.id]&&m.dt>now)[0]||SWE_MATCHES.filter(m=>!playedMap[m.id])[0];
   if(nextSwe){document.getElementById('swe').innerHTML=mcHero(nextSwe);loadWeather(nextSwe.home===SWE?nextSwe.away:nextSwe.home);}
