@@ -93,6 +93,8 @@ html,body{height:100%;background:var(--bg);color:var(--ink);font-family:'Manrope
 .scr .pl b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .scr .pl small{font-size:9.5px;color:var(--muted);}
 .scr .gl{font-weight:800;color:var(--gold);font-size:14px;}
+.scr .tipby{font-size:8.5px;color:var(--gold);font-weight:700;}
+.tot .prog{display:block;font-size:8.5px;color:var(--faint);font-weight:700;letter-spacing:.2px;}
 /* specials */
 .sr{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--line);font-size:12.5px;font-weight:500;}
 .sr:last-child{border-bottom:none;}
@@ -251,6 +253,7 @@ const TAB_TIPS="Tips";      // formulärsvar
 const TAB_FACIT="Facit";    // facit (du fyller i / Apps Script fyller i)
 const TAB_GRPF="GruppF";    // Grupp F-tabell (Apps Script fyller i)
 const TAB_SCORERS="Skytteliga"; // topp 5 målskyttar (Apps Script fyller i)
+const TAB_LEDARE="Ledare";      // aktuella gruppledare (Apps Script fyller i, driver prognosen)
 const IS_MOBILE=(typeof window!=='undefined'&&window.matchMedia&&window.matchMedia('(max-width:900px)').matches);
 const MAX_ROWS=IS_MOBILE?999:10;  // mobil: visa alla (scroll); TV: topp 10 + rullande nederkant
 
@@ -280,7 +283,7 @@ const REAL_PLAYERS=["Andreas", "Sara Claesson", "Marcus", "Hanna", "Alexander Ca
 const REAL_TIPS={"Andreas": {"swe_tun": {"h": 0, "a": 1}, "ned_swe": {"h": 3, "a": 0}, "jpn_swe": {"h": 1, "a": 1}}, "Sara Claesson": {"swe_tun": {"h": 1, "a": 0}, "ned_swe": {"h": 2, "a": 0}, "jpn_swe": {"h": 2, "a": 2}}, "Marcus": {"swe_tun": {"h": 0, "a": 0}, "ned_swe": {"h": 1, "a": 0}, "jpn_swe": {"h": 0, "a": 0}}, "Hanna": {"swe_tun": {"h": 2, "a": 0}, "ned_swe": {"h": 1, "a": 2}, "jpn_swe": {"h": 1, "a": 1}}, "Alexander Carlsson": {"swe_tun": {"h": 2, "a": 1}, "ned_swe": {"h": 2, "a": 0}, "jpn_swe": {"h": 1, "a": 1}}, "Jessica": {"swe_tun": {"h": 3, "a": 2}, "ned_swe": {"h": 3, "a": 1}, "jpn_swe": {"h": 1, "a": 1}}, "Chrille": {"swe_tun": {"h": 1, "a": 1}, "ned_swe": {"h": 0, "a": 1}, "jpn_swe": {"h": 2, "a": 0}}, "Micke \"Mr VM\" Thorén": {"swe_tun": {"h": 3, "a": 1}, "ned_swe": {"h": 4, "a": 1}, "jpn_swe": {"h": 2, "a": 1}}, "Jennifer Lebedev": {"swe_tun": {"h": 2, "a": 1}, "ned_swe": {"h": 2, "a": 0}, "jpn_swe": {"h": 2, "a": 1}}, "Ewelina Karlsson": {"swe_tun": {"h": 3, "a": 2}, "ned_swe": {"h": 1, "a": 0}, "jpn_swe": {"h": 0, "a": 1}}, "Anna Ekberg": {"swe_tun": {"h": 3, "a": 2}, "ned_swe": {"h": 2, "a": 1}, "jpn_swe": {"h": 1, "a": 1}}, "Emelie": {"swe_tun": {"h": 3, "a": 2}, "ned_swe": {"h": 1, "a": 2}, "jpn_swe": {"h": 4, "a": 2}}, "Linda": {"swe_tun": {"h": 2, "a": 0}, "ned_swe": {"h": 1, "a": 1}, "jpn_swe": {"h": 3, "a": 1}}, "Hilde": {"swe_tun": {"h": 1, "a": 1}, "ned_swe": {"h": 3, "a": 1}, "jpn_swe": {"h": 1, "a": 2}}, "Moa ''Niva'' Kullander": {"swe_tun": {"h": 1, "a": 0}, "ned_swe": {"h": 2, "a": 1}, "jpn_swe": {"h": 1, "a": 1}}, "Sibban, dubbelfinten Elf": {"swe_tun": {"h": 3, "a": 0}, "ned_swe": {"h": 1, "a": 1}, "jpn_swe": {"h": 2, "a": 1}}, "Malin": {"swe_tun": {"h": 2, "a": 1}, "ned_swe": {"h": 2, "a": 2}, "jpn_swe": {"h": 1, "a": 1}}, "Amanda Malmgren": {"swe_tun": {"h": 2, "a": 2}, "ned_swe": {"h": 3, "a": 2}, "jpn_swe": {"h": 1, "a": 2}}, "Alexander Tiholt": {"swe_tun": {"h": 3, "a": 1}, "ned_swe": {"h": 2, "a": 2}, "jpn_swe": {"h": 2, "a": 1}}, "Jossan": {"swe_tun": {"h": 3, "a": 2}, "ned_swe": {"h": 2, "a": 1}, "jpn_swe": {"h": 3, "a": 1}}, "Nelly Schroth": {"swe_tun": {"h": 1, "a": 0}, "ned_swe": {"h": 0, "a": 0}, "jpn_swe": {"h": 1, "a": 1}}};
 const REAL_EXTRA={"Andreas": {"gw": {"A": "Czechia", "B": "Switzerland", "C": "Brazil", "D": "Türkiye", "E": "Germany", "F": "Netherlands", "G": "Belgium", "H": "Spain", "I": "France", "J": "Argentina", "K": "Portugal", "L": "Croatia"}, "scorer": "Neymar", "winner": "Brazil", "final": ["Argentina", "Brazil"]}, "Sara Claesson": {"gw": {"A": "South Korea", "B": "Switzerland", "C": "Brazil", "D": "USA", "E": "Germany", "F": "Netherlands", "G": "Belgium", "H": "Spain", "I": "France", "J": "Argentina", "K": "Portugal", "L": "England"}, "scorer": "Messi", "winner": "Argentina", "final": ["Argentina", "Spain"]}, "Marcus": {"gw": {"A": "Mexico", "B": "Switzerland", "C": "Brazil", "D": "USA", "E": "Germany", "F": "Netherlands", "G": "Belgium", "H": "Uruguay", "I": "France", "J": "Argentina", "K": "Portugal", "L": "England"}, "scorer": "Van Der Klompen Stompen", "winner": "Netherlands", "final": ["Netherlands", "USA"]}, "Hanna": {"gw": {"A": "Mexico", "B": "Switzerland", "C": "Brazil", "D": "Australia", "E": "Germany", "F": "Netherlands", "G": "Belgium", "H": "Spain", "I": "France", "J": "Argentina", "K": "Portugal", "L": "England"}, "scorer": "Cristiano Ronaldo", "winner": "Spain", "final": ["Spain", "France"]}, "Alexander Carlsson": {"gw": {"A": "South Korea", "B": "Switzerland", "C": "Brazil", "D": "Türkiye", "E": "Germany", "F": "Netherlands", "G": "Belgium", "H": "Spain", "I": "France", "J": "Argentina", "K": "Portugal", "L": "England"}, "scorer": "Kylian Mbappé", "winner": "Spain", "final": ["Spain", "Brazil"]}, "Jessica": {"gw": {"A": "Mexico", "B": "Switzerland", "C": "Brazil", "D": "Türkiye", "E": "Germany", "F": "Netherlands", "G": "Belgium", "H": "Spain", "I": "France", "J": "Argentina", "K": "Colombia", "L": "England"}, "scorer": "Dembélé", "winner": "France", "final": ["France", "Brazil"]}, "Chrille": {"gw": {"A": "Mexico", "B": "Switzerland", "C": "Morocco", "D": "Türkiye", "E": "Ivory Coast", "F": "Japan", "G": "Belgium", "H": "Spain", "I": "France", "J": "Argentina", "K": "Portugal", "L": "Croatia"}, "scorer": "Kylian Mbappé", "winner": "France", "final": ["Japan", "France"]}, "Micke \"Mr VM\" Thorén": {"gw": {"A": "Mexico", "B": "Switzerland", "C": "Brazil", "D": "Türkiye", "E": "Germany", "F": "Netherlands", "G": "Belgium", "H": "Spain", "I": "Norway", "J": "Argentina", "K": "Portugal", "L": "England"}, "scorer": "Harry Kane", "winner": "Spain", "final": ["Spain", "England"]}, "Jennifer Lebedev": {"gw": {"A": "Mexico", "B": "Switzerland", "C": "Brazil", "D": "Paraguay", "E": "Germany", "F": "Netherlands", "G": "Belgium", "H": "Spain", "I": "France", "J": "Argentina", "K": "Portugal", "L": "England"}, "scorer": "Kylian Mbappé", "winner": "France", "final": ["Spain", "France"]}, "Ewelina Karlsson": {"gw": {"A": "Mexico", "B": "Switzerland", "C": "Brazil", "D": "USA", "E": "Germany", "F": "Netherlands", "G": "Belgium", "H": "Spain", "I": "France", "J": "Argentina", "K": "Portugal", "L": "England"}, "scorer": "Håland", "winner": "Brazil", "final": ["France", "Brazil"]}, "Anna Ekberg": {"gw": {"A": "South Africa", "B": "Canada", "C": "Brazil", "D": "USA", "E": "Germany", "F": "Netherlands", "G": "Belgium", "H": "Spain", "I": "France", "J": "Algeria", "K": "Portugal", "L": "England"}, "scorer": "Lamine Yamal", "winner": "Spain", "final": ["Spain", "France"]}, "Emelie": {"gw": {"A": "Mexico", "B": "Switzerland", "C": "Brazil", "D": "USA", "E": "Ecuador", "F": "Japan", "G": "Belgium", "H": "Spain", "I": "Norway", "J": "Austria", "K": "Portugal", "L": "England"}, "scorer": "Cristian Roldan", "winner": "USA", "final": ["Japan", "USA"]}, "Linda": {"gw": {"A": "Mexico", "B": "Switzerland", "C": "Brazil", "D": "Türkiye", "E": "Germany", "F": "Japan", "G": "Belgium", "H": "Spain", "I": "France", "J": "Argentina", "K": "Portugal", "L": "England"}, "scorer": "Kylian Mbappé", "winner": "Spain", "final": ["England", "Spain"]}, "Hilde": {"gw": {"A": "South Korea", "B": "Switzerland", "C": "Morocco", "D": "Paraguay", "E": "Germany", "F": "Netherlands", "G": "Belgium", "H": "Spain", "I": "Norway", "J": "Austria", "K": "Colombia", "L": "England"}, "scorer": "Erling Braut Haaland", "winner": "Norway", "final": ["Norway", "Germany"]}, "Moa ''Niva'' Kullander": {"gw": {"A": "Mexico", "B": "Switzerland", "C": "Brazil", "D": "USA", "E": "Germany", "F": "Netherlands", "G": "Belgium", "H": "Spain", "I": "France", "J": "Argentina", "K": "Portugal", "L": "England"}, "scorer": "Kylian Mbappé", "winner": "Spain", "final": ["Spain", "France"]}, "Sibban, dubbelfinten Elf": {"gw": {"A": "Mexico", "B": "Switzerland", "C": "Brazil", "D": "Paraguay", "E": "Germany", "F": "Japan", "G": "Belgium", "H": "Spain", "I": "France", "J": "Argentina", "K": "Portugal", "L": "England"}, "scorer": "Kylian Mbappé", "winner": "France", "final": ["France", "England"]}, "Malin": {"gw": {"A": "Mexico", "B": "Switzerland", "C": "Brazil", "D": "Paraguay", "E": "Germany", "F": "Netherlands", "G": "Belgium", "H": "Spain", "I": "France", "J": "Argentina", "K": "Portugal", "L": "England"}, "scorer": "Mbappé", "winner": "Spain", "final": ["Spain", "France"]}, "Amanda Malmgren": {"gw": {"A": "Mexico", "B": "Switzerland", "C": "Brazil", "D": "USA", "E": "Germany", "F": "Netherlands", "G": "Belgium", "H": "Saudi Arabia", "I": "France", "J": "Argentina", "K": "Portugal", "L": "England"}, "scorer": "Kylian Mbappé", "winner": "Brazil", "final": ["Brazil", "England"]}, "Alexander Tiholt": {"gw": {"A": "Mexico", "B": "Switzerland", "C": "Brazil", "D": "Türkiye", "E": "Germany", "F": "Japan", "G": "Belgium", "H": "Spain", "I": "France", "J": "Argentina", "K": "Portugal", "L": "England"}, "scorer": "Lamine Yamal", "winner": "Spain", "final": ["Spain", "Portugal"]}, "Jossan": {"gw": {"A": "Czechia", "B": "Canada", "C": "Brazil", "D": "USA", "E": "Germany", "F": "Sweden", "G": "Belgium", "H": "Spain", "I": "France", "J": "Argentina", "K": "Portugal", "L": "England"}, "scorer": "Kylian Mbappé", "winner": "Sweden", "final": ["USA", "Sweden"]}, "Nelly Schroth": {"gw": {"A": "Czechia", "B": "Switzerland", "C": "Brazil", "D": "USA", "E": "Germany", "F": "Netherlands", "G": "Belgium", "H": "Spain", "I": "France", "J": "Argentina", "K": "Portugal", "L": "England"}, "scorer": "Kylian Mbappé", "winner": "France", "final": ["Spain", "France"]}};
 function emptyFacit(){return {gw:{},scorer:'',winner:'',swe:{}};}
-function realData(){return {players:REAL_PLAYERS,tips:REAL_TIPS,extra:REAL_EXTRA,facit:emptyFacit(),grpf:demoGrpF(),scorers:[]};}
+function realData(){return {players:REAL_PLAYERS,tips:REAL_TIPS,extra:REAL_EXTRA,facit:emptyFacit(),grpf:demoGrpF(),scorers:[],leaders:{}};}
 
 function sweScore(t,f){if(!t||!f||f.h==null)return null;if(t.h===f.h&&t.a===f.a)return 3;const fw=f.h>f.a?'H':f.h<f.a?'A':'D',tw=t.h>t.a?'H':t.h<t.a?'A':'D';return fw===tw?1:0;}
 function calc(D,p){const e=D.extra[p]||{gw:{}},t=D.tips[p]||{},f=D.facit;let gw=0,gok=0,gres=0,sv=0,sp=0,scOk=false,wcOk=false;
@@ -289,6 +292,12 @@ function calc(D,p){const e=D.extra[p]||{gw:{}},t=D.tips[p]||{},f=D.facit;let gw=
   if(f.scorer&&e.scorer&&e.scorer.toLowerCase().trim()===f.scorer.toLowerCase().trim()){sp+=10;scOk=true;}
   if(f.winner&&e.winner&&e.winner===f.winner){sp+=20;wcOk=true;}
   return{total:gw+sv+sp,gw,gok,gres,sv,sp,scOk,wcOk};}
+function nrm(s){return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/haland/g,'haaland').trim();}
+function scorerMatch(tip,api){if(!tip||!api)return false;const nt=nrm(tip),na=nrm(api);if(!nt||!na)return false;const sur=na.split(' ').pop();return na.includes(nt)||nt.includes(sur);}
+function prognos(D,p,base){let pr=base;const e=D.extra[p]||{gw:{}};const f=D.facit,L=D.leaders||{};
+  GK.forEach(g=>{if(f.gw&&f.gw[g])return;const led=L[g];if(led&&e.gw&&e.gw[g]===led)pr+=5;});
+  if(!(f.scorer)&&D.scorers&&D.scorers[0]&&scorerMatch(e.scorer,D.scorers[0].name))pr+=10;
+  return pr;}
 function avc(n){let h=0;for(const c of n)h=(h*31+c.charCodeAt(0))%360;return `hsl(${h},52%,52%)`;}
 function ini(n){return n.split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase();}
 
@@ -341,20 +350,24 @@ function renderGrpF(g){
     g.map((r,i)=>`<div class="gfrow ${r.team==='Sweden'?'swe':''}"><span class="gfpos">${i+1}</span><span class="gfteam">${fl(r.team)} ${r.team}</span><span class="gfnum">${r.gp}</span><span class="gfnum">${r.gd>0?'+':''}${r.gd}</span><span class="gfp">${r.p}</span></div>`).join('');
 }
 
+function parseLeaders(rows){const out={};rows.forEach(r=>{const g=(r[0]||'').trim(),t=(r[1]||'').trim();if(GROUPS[g]&&t)out[g]=t;});return out;}
 function parseScorers(rows){
   const out=[];rows.forEach(r=>{const nm=(r[0]||'').trim();if(!nm||/spelare/i.test(nm))return;
     out.push({name:nm,team:(r[1]||'').trim(),goals:+r[2]||0});});
   return out.slice(0,5);
 }
-function renderScorers(list){
+function renderScorers(list,D){
   const el=document.getElementById('scorers');if(!el)return;
   if(!list||!list.length||!list.some(s=>s.goals>0)){el.innerHTML='<p class="dim">Uppdateras när målen börjar trilla in.</p>';return;}
-  el.innerHTML=list.map((s,i)=>`<div class="scr"><span class="pos">${i+1}</span><span class="pl"><b>${s.name}</b><small>${fl(s.team)} ${sv(s.team)}</small></span><span class="gl">${s.goals}</span></div>`).join('');
+  el.innerHTML=list.map((s,i)=>{
+    const who=(D&&D.players||[]).filter(p=>scorerMatch((D.extra[p]||{}).scorer,s.name));
+    const tip=who.length?`<span class="tipby">🎯 ${who.length===1?who[0].split(' ')[0]:who.slice(0,2).map(x=>x.split(' ')[0]).join(', ')+(who.length>2?' +'+(who.length-2):'')}</span>`:'';
+    return `<div class="scr"><span class="pos">${i+1}</span><span class="pl"><b>${s.name}</b><small>${fl(s.team)} ${sv(s.team)}${tip?' · ':''}${tip}</small></span><span class="gl">${s.goals}</span></div>`;}).join('');
 }
 function render(D){
   const now=new Date();
   const playedMap={};SWE_MATCHES.forEach((m,i)=>{const r=D.facit.swe&&D.facit.swe[SWKEYS[i]];if(r&&r.h!=null)playedMap[m.id]=r;});
-  const rk=D.players.map(p=>({p,s:calc(D,p)})).sort((a,b)=>b.s.total-a.s.total);
+  const rk=D.players.map(p=>{const s=calc(D,p);return{p,s,prog:prognos(D,p,s.total)};}).sort((a,b)=>b.s.total-a.s.total||b.prog-a.prog);
   const med=['🥇','🥈','🥉'];
   const shown=rk.slice(0,MAX_ROWS);
   document.getElementById('lb').innerHTML=shown.map((r,i)=>{const lead=i===0;
@@ -363,9 +376,9 @@ function render(D){
       <div class="sub">${r.s.gw}<small>${r.s.gok}/12 rätt</small></div>
       <div class="sub">${r.s.sv}<small>av 9</small></div>
       <div class="sub">${r.s.sp}<small>${[r.s.wcOk?'VM':'',r.s.scOk?'⚽':''].filter(Boolean).join(' ')||'–'}</small></div>
-      <div class="tot ${lead?'lead':''}">${r.s.total}</div></div>`;}).join('')||'<p class="dim" style="padding:8px">Inga deltagare ännu.</p>';
+      <div class="tot ${lead?'lead':''}">${r.s.total}${r.prog>r.s.total?`<span class="prog">prognos ${r.prog}</span>`:''}</div></div>`;}).join('')||'<p class="dim" style="padding:8px">Inga deltagare ännu.</p>';
   document.getElementById('more').textContent=rk.length>MAX_ROWS?`+ ${rk.length-MAX_ROWS} till – hela ställningen rullar nedan ↓`:'';
-  document.getElementById('lb-hint').textContent=`${rk.length} deltagare`;
+  document.getElementById('lb-hint').textContent=`${rk.length} deltagare · lika poäng sorteras på prognos`;
 
   nextSwe=SWE_MATCHES.filter(m=>!playedMap[m.id]&&m.dt>now)[0]||SWE_MATCHES.filter(m=>!playedMap[m.id])[0];
   if(nextSwe){document.getElementById('swe').innerHTML=mcHero(nextSwe);loadWeather(nextSwe.home===SWE?nextSwe.away:nextSwe.home);}
@@ -373,7 +386,7 @@ function render(D){
   cd();
 
   renderGrpF(D.grpf||demoGrpF());
-  renderScorers(D.scorers||[]);
+  renderScorers(D.scorers||[],D);
 
   const upc=M.filter(m=>m.dt>now).sort((a,b)=>a.dt-b.dt).slice(0,4);
   document.getElementById('upc').innerHTML=upc.map(m=>`<div class="up"><div class="w">${whenTxt(m.dt)}</div><div class="tm">${fl(m.home)} ${m.home}<span class="v">–</span>${m.away} ${fl(m.away)}</div><div>${m.swe?'<span class="stag">SVE</span>':`<span class="gtag">${m.grupp}</span>`}</div></div>`).join('')||'<p class="dim">Gruppspelet klart.</p>';
@@ -455,6 +468,16 @@ function buildTipFacts(){
   Object.entries(gwC).filter(([k,v])=>v===1).slice(0,6).forEach(([k])=>{const[g,team]=k.split('|');
     const who=D.players.find(p=>D.extra[p]&&D.extra[p].gw&&D.extra[p].gw[g]===team);
     if(who)f.push(`Ensamvarg: bara ${who} tror på ${sv(team)} i grupp ${g}`);});
+  // prognosfakta
+  if(D.leaders&&Object.keys(D.leaders).length){
+    const pr=D.players.map(p=>({p,v:prognos(D,p,calc(D,p).total)})).sort((a,b)=>b.v-a.v);
+    if(pr[0]&&pr[0].v>0)f.push(`Prognosledare just nu: ${pr[0].p} (${pr[0].v}p om allt står sig)`);
+  }
+  if(D.scorers&&D.scorers[0]&&D.scorers[0].goals>0){
+    const who=D.players.filter(p=>scorerMatch((D.extra[p]||{}).scorer,D.scorers[0].name));
+    if(who.length)f.push(`${D.scorers[0].name} toppar skytteligan – tippad av ${who.join(', ')}`);
+    else f.push(`${D.scorers[0].name} toppar skytteligan – ingen av oss tippade honom!`);
+  }
   return shuffle(f);
 }
 function rotTriv(){const el=document.getElementById('trivia');if(!el)return;
@@ -468,7 +491,8 @@ async function load(){const note=document.getElementById('note'),sync=document.g
   if(!SHEET_ID){DATA=realData();paint();sync.textContent='Förhandsvisning';note.textContent='Live-resultat tänds när SHEET_ID lagts in';return;}
   try{const facit=parseFacit(await tab(TAB_FACIT));let grpf=demoGrpF();try{grpf=parseGrpF(await tab(TAB_GRPF));}catch(e){}
     let scorers=[];try{scorers=parseScorers(await tab(TAB_SCORERS));}catch(e){}
-    DATA={players:REAL_PLAYERS,tips:REAL_TIPS,extra:REAL_EXTRA,facit,grpf,scorers};
+    let leaders={};try{leaders=parseLeaders(await tab(TAB_LEDARE));}catch(e){}
+    DATA={players:REAL_PLAYERS,tips:REAL_TIPS,extra:REAL_EXTRA,facit,grpf,scorers,leaders};
     paint();sync.textContent='● Live · '+new Date().toLocaleTimeString('sv-SE');sync.classList.add('live');note.textContent='';}
   catch(e){DATA=realData();paint();sync.textContent='Kunde inte läsa Sheet – kontrollera delning & ID';}}
 load();setInterval(load,60000);
