@@ -169,6 +169,44 @@ html,body{height:100%;background:var(--bg);color:var(--ink);font-family:'Manrope
 .gfp{text-align:center;font-weight:800;color:var(--ink);}
 /* trivia */
 .trivia{font-size:13px;color:var(--ink);line-height:1.45;min-height:38px;display:flex;align-items:center;}
+
+/* ── spelarkort / spotlight ── */
+.lbrow{cursor:pointer;transition:transform .08s,box-shadow .12s;}
+.lbrow:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(25,45,75,.10);}
+.ovl{position:fixed;inset:0;z-index:50;background:rgba(20,30,45,.55);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;padding:18px;}
+.ovl.show{display:flex;animation:ovlin .22s ease;}
+@keyframes ovlin{from{opacity:0}to{opacity:1}}
+.pcard{position:relative;background:var(--card);border-radius:20px;box-shadow:0 24px 70px rgba(15,30,60,.4);width:min(560px,calc(100% - 24px));max-height:88vh;overflow:auto;padding:22px 22px 18px;animation:cardin .26s cubic-bezier(.2,.8,.3,1);}
+@keyframes cardin{from{transform:scale(.94) translateY(10px);opacity:0}to{transform:none;opacity:1}}
+.ovlx{position:absolute;top:14px;right:14px;width:30px;height:30px;border:none;border-radius:50%;background:#eef1f5;color:var(--muted);font-size:14px;cursor:pointer;}
+.ovlx:hover{background:#e2e7ee;}
+.pc-head{display:flex;align-items:center;gap:13px;margin-bottom:14px;}
+.pc-head .av{width:46px;height:46px;font-size:16px;}
+.pc-name{font-size:20px;font-weight:800;letter-spacing:-.3px;}
+.pc-pts{font-size:13px;color:var(--muted);font-weight:600;}
+.pc-sec{font-size:10px;letter-spacing:.5px;text-transform:uppercase;color:var(--faint);font-weight:700;margin:14px 0 8px;display:flex;align-items:center;gap:8px;}
+.pc-on{color:var(--green);background:var(--green-soft);border-radius:var(--pill);padding:2px 9px;font-size:10px;}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.gchip{display:flex;align-items:center;gap:6px;padding:6px 9px;border-radius:10px;background:#f7f9fb;border:1px solid var(--line);font-size:12px;}
+.gchip .gg{font-weight:800;color:var(--faint);width:14px;}
+.gchip .gt{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600;}
+.gchip .gi{font-weight:800;}
+.gchip.lead{background:var(--green-soft);border-color:#bfe6d2;}
+.gchip.lead .gi{color:var(--green);}
+.gchip.done{background:var(--gold-soft);border-color:#f0d6a4;}
+.gchip.done .gi{color:var(--gold);}
+.gchip.miss{opacity:.55;}
+.gchip.miss .gi{color:var(--red);}
+.gchip.wait .gi{color:var(--faint);}
+.pc-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:4px;}
+.swrow{display:flex;align-items:center;gap:7px;font-size:12.5px;padding:5px 0;border-bottom:1px solid var(--line);}
+.swrow:last-child{border-bottom:none;}
+.swrow span{color:var(--muted);min-width:74px;}
+.swrow b{font-weight:700;}
+.swrow small{color:var(--faint);font-size:10px;}
+.swrow .ok{margin-left:auto;color:var(--green);font-weight:800;}
+.swrow .miss{margin-left:auto;color:var(--red);font-weight:700;}
+@media (max-width:480px){.pc-cols{grid-template-columns:1fr;gap:6px;}.pgrid{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
@@ -212,6 +250,7 @@ html,body{height:100%;background:var(--bg);color:var(--ink);font-family:'Manrope
   <div class="tick"><div class="tag" id="ticktag">Ställning</div><div class="vp"><span class="ti" id="tickt"></span></div></div>
 </div>
 <div class="note" id="note"></div>
+<div class="ovl" id="ovl" onclick="if(event.target===this)closeCard()"><div class="pcard" id="pcard"></div></div>
 <script>
 const FIX=[
  ['A','Mexico','South Africa','2026-06-11T21:00'],['A','South Korea','Czechia','2026-06-12T04:00'],
@@ -368,6 +407,49 @@ function renderScorers(list,D){
     const tip=who.length?`<span class="tipby">🎯 ${who.length===1?who[0].split(' ')[0]:who.slice(0,2).map(x=>x.split(' ')[0]).join(', ')+(who.length>2?' +'+(who.length-2):'')}</span>`:'';
     return `<div class="scr"><span class="pos">${i+1}</span><span class="pl"><b>${s.name}</b><small>${fl(s.team)} ${sv(s.team)}${tip?' · ':''}${tip}</small></span><span class="gl">${s.goals}</span></div>`;}).join('');
 }
+function onTrk(D,p){const e=D.extra[p]||{gw:{}},f=D.facit,L=D.leaders||{};let n=0;GK.forEach(g=>{const pick=e.gw&&e.gw[g];const lead=(f.gw&&f.gw[g])||L[g];if(pick&&lead&&pick===lead)n++;});return n;}
+
+function renderCard(D,name){
+  const e=D.extra[name]||{gw:{}},t=D.tips[name]||{},f=D.facit,L=D.leaders||{};
+  const s=calc(D,name),pr=prognos(D,name,s.total);let on=0;
+  const chips=GK.map(g=>{const pick=e.gw&&e.gw[g];const decided=f.gw&&f.gw[g];const lead=decided||L[g];
+    let cls='wait',ic='·';
+    if(pick&&lead&&pick===lead){on++;if(decided){cls='done';ic='✓';}else{cls='lead';ic='▲';}}
+    else if(decided){cls='miss';ic='✕';}
+    return `<div class="gchip ${cls}"><span class="gg">${g}</span><span class="gt">${pick?fl(pick)+' '+sv(pick):'–'}</span><span class="gi">${ic}</span></div>`;}).join('');
+  const swe=[['Tunisien','swe_tun'],['Nederl.','ned_swe'],['Japan','jpn_swe']].map(([lbl,k])=>{
+    const tp=t[k],fa=f.swe&&f.swe[k];const r=fa?sweScore(tp,fa):null;
+    const tag=r===3?'<span class="ok">+3p</span>':r===1?'<span class="ok">+1p</span>':r===0?'<span class="miss">0p</span>':'';
+    return `<div class="swrow"><span>${lbl}</span><b>${tp?tp.h+'–'+tp.a:'–'}</b>${fa?`<small>facit ${fa.h}–${fa.a}</small>`:''}${tag}</div>`;}).join('');
+  const scOk=D.scorers&&D.scorers[0]&&D.scorers[0].goals>0&&scorerMatch(e.scorer,D.scorers[0].name);
+  const fin=(e.final||[]).filter(Boolean).map(x=>fl(x)+' '+sv(x)).join(' – ')||'–';
+  document.getElementById('pcard').innerHTML=`<button class="ovlx" onclick="closeCard()">✕</button>
+    <div class="pc-head"><div class="av" style="background:${avc(name)}">${ini(name)}</div>
+      <div><div class="pc-name">${name}</div><div class="pc-pts">${s.total} poäng${pr>s.total?` · <span style="color:var(--red);font-weight:800">${pr}</span> om allt står sig`:''}</div></div></div>
+    <div class="pc-sec">Gruppvinnare <span class="pc-on">${on}/12 på spår</span></div>
+    <div class="pgrid">${chips}</div>
+    <div class="pc-cols">
+      <div><div class="pc-sec">Sveriges matcher</div>${swe}</div>
+      <div><div class="pc-sec">Övriga tips</div>
+        <div class="swrow"><span>VM-vinnare</span><b>${e.winner?fl(e.winner)+' '+sv(e.winner):'–'}</b></div>
+        <div class="swrow"><span>Final</span><b>${fin}</b></div>
+        <div class="swrow"><span>Skyttekung</span><b>${e.scorer||'–'}</b>${scOk?'<span class="ok">▲ toppar</span>':''}</div>
+      </div></div>`;
+}
+let PAUSE_UNTIL=0,SPOT_IDX=-1,SPOT_TIMER=null,SPOT_STARTED=false,INIT=false;
+function openCard(name,isAuto){if(!isAuto)PAUSE_UNTIL=Date.now()+30000;renderCard(DATA,name);document.getElementById('ovl').classList.add('show');}
+function closeCard(){document.getElementById('ovl').classList.remove('show');}
+function spotlightLoop(){clearTimeout(SPOT_TIMER);
+  if(Date.now()<PAUSE_UNTIL){SPOT_TIMER=setTimeout(spotlightLoop,3000);return;}
+  const order=(LASTRK||[]).map(r=>r.p);if(!order.length){SPOT_TIMER=setTimeout(spotlightLoop,5000);return;}
+  SPOT_IDX=(SPOT_IDX+1)%order.length;openCard(order[SPOT_IDX],true);
+  SPOT_TIMER=setTimeout(()=>{closeCard();SPOT_TIMER=setTimeout(spotlightLoop,6000);},9000);}
+function startSpotlight(){if(IS_MOBILE||SPOT_STARTED)return;SPOT_STARTED=true;SPOT_TIMER=setTimeout(spotlightLoop,7000);}
+function initInteractive(){if(INIT)return;INIT=true;const lb=document.getElementById('lb');
+  if(lb)lb.addEventListener('click',ev=>{const row=ev.target.closest('.lbrow');if(row&&row.dataset.p)openCard(decodeURIComponent(row.dataset.p),false);});
+  document.addEventListener('keydown',ev=>{if(ev.key==='Escape')closeCard();});
+  startSpotlight();}
+
 function render(D){
   const now=new Date();
   const playedMap={};SWE_MATCHES.forEach((m,i)=>{const r=D.facit.swe&&D.facit.swe[SWKEYS[i]];if(r&&r.h!=null)playedMap[m.id]=r;});
@@ -375,9 +457,9 @@ function render(D){
   const med=['🥇','🥈','🥉'];
   const shown=rk.slice(0,MAX_ROWS);
   document.getElementById('lb').innerHTML=shown.map((r,i)=>{const lead=i===0;
-    return `<div class="lbrow ${lead?'lead':''}"><div class="rk">${med[i]||i+1}</div>
+    return `<div class="lbrow ${lead?'lead':''}" data-p="${encodeURIComponent(r.p)}"><div class="rk">${med[i]||i+1}</div>
       <div class="who"><div class="av" style="background:${avc(r.p)}">${ini(r.p)}</div><div class="nm">${r.p}</div></div>
-      <div class="sub">${r.s.gw}<small>${r.s.gok}/12 rätt</small></div>
+      <div class="sub">${r.s.gw}<small>${onTrk(D,r.p)}/12 på spår</small></div>
       <div class="sub">${r.s.sv}<small>av 9</small></div>
       <div class="sub">${r.s.sp}<small>${[r.s.wcOk?'VM':'',r.s.scOk?'⚽':''].filter(Boolean).join(' ')||'–'}</small></div>
       <div class="totwrap">${r.prog>r.s.total?`<span class="prog">${r.prog}</span>`:''}<span class="tot ${lead?'lead':''}">${r.s.total}</span></div></div>`;}).join('')||'<p class="dim" style="padding:8px">Inga deltagare ännu.</p>';
@@ -398,6 +480,7 @@ function render(D){
   LASTRK=rk;
   applyTicker();
   startTickerRotation();
+  initInteractive();
 }
 
 function buildTipsspaning(){
