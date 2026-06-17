@@ -42,6 +42,9 @@ html,body{height:100%;background:var(--bg);color:var(--ink);font-family:'Manrope
 .ch.gold .ic{background:var(--gold-soft);color:var(--gold);}
 .ch.blue .ic{background:#e6effe;color:var(--blue);}
 .ch .hint{margin-left:auto;font-size:10px;color:var(--faint);font-weight:500;}
+.spot-toggle{margin-left:10px;font-size:10px;font-weight:700;border:1px solid var(--line);background:var(--green-soft);color:var(--green);border-radius:var(--pill);padding:4px 11px;cursor:pointer;white-space:nowrap;}
+.spot-toggle.off{background:#f1f3f6;color:var(--faint);}
+.spot-toggle:hover{filter:brightness(0.97);}
 /* leaderboard */
 .lbwrap{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;}
 .lbhead,.lbrow{display:grid;grid-template-columns:26px 1fr 52px 44px 64px 52px;align-items:center;gap:12px;}
@@ -144,6 +147,8 @@ html,body{height:100%;background:var(--bg);color:var(--ink);font-family:'Manrope
   .ti{font-size:12px;}
   .note{display:none;}
   .morert{display:none;}
+  .spot-toggle{display:none;}
+  .ch .hint{display:none;}
 }
 @media (max-width:480px){
   .brand h1{font-size:18px;}
@@ -251,7 +256,7 @@ html,body{height:100%;background:var(--bg);color:var(--ink);font-family:'Manrope
   <div class="grid">
     <div class="col">
       <div class="card" style="flex:1 1 auto">
-        <div class="ch gold"><div class="ic">🏆</div><h2>Poängställning</h2><span class="hint" id="lb-hint"></span></div>
+        <div class="ch gold"><div class="ic">🏆</div><h2>Poängställning</h2><span class="hint" id="lb-hint"></span><button class="spot-toggle" id="spotBtn" onclick="toggleSpotlight()" title="Slå av/på automatiskt bildspel av deltagarkort">◉ Spotlight: på</button></div>
         <p class="lb-note"><span class="dot"></span>Röd siffra = läget om VM skulle sluta nu (aktuella gruppledare + skytteligaetta)</p>
         <div class="lbwrap">
           <div class="lbhead"><div class="c">#</div><div>Namn</div><div class="c">Grupp</div><div class="c">🇸🇪</div><div class="c">Skytt+VM</div><div class="r">Poäng</div></div>
@@ -465,15 +470,19 @@ function renderCard(D,name){
         <div class="swrow"><span>Skyttekung</span><b>${e.scorer||'–'}</b>${scOk?'<span class="ok">▲ toppar</span>':''}</div>
       </div></div>`;
 }
-let PAUSE_UNTIL=0,SPOT_IDX=-1,SPOT_TIMER=null,SPOT_STARTED=false,INIT=false;
+let PAUSE_UNTIL=0,SPOT_IDX=-1,SPOT_TIMER=null,SPOT_STARTED=false,INIT=false,SPOT_ENABLED=true;
 function openCard(name,isAuto){if(!isAuto)PAUSE_UNTIL=Date.now()+30000;renderCard(DATA,name);document.getElementById('ovl').classList.add('show');}
 function closeCard(){document.getElementById('ovl').classList.remove('show');}
 function spotlightLoop(){clearTimeout(SPOT_TIMER);
+  if(!SPOT_ENABLED){SPOT_TIMER=setTimeout(spotlightLoop,2000);return;}
   if(Date.now()<PAUSE_UNTIL){SPOT_TIMER=setTimeout(spotlightLoop,3000);return;}
   const order=(LASTRK||[]).map(r=>r.p);if(!order.length){SPOT_TIMER=setTimeout(spotlightLoop,5000);return;}
   SPOT_IDX=(SPOT_IDX+1)%order.length;openCard(order[SPOT_IDX],true);
   SPOT_TIMER=setTimeout(()=>{closeCard();SPOT_TIMER=setTimeout(spotlightLoop,6000);},9000);}
 function startSpotlight(){if(IS_MOBILE||SPOT_STARTED)return;SPOT_STARTED=true;SPOT_TIMER=setTimeout(spotlightLoop,7000);}
+function toggleSpotlight(){SPOT_ENABLED=!SPOT_ENABLED;const b=document.getElementById('spotBtn');
+  if(b){b.textContent=(SPOT_ENABLED?'◉ Spotlight: på':'◯ Spotlight: av');b.classList.toggle('off',!SPOT_ENABLED);}
+  if(!SPOT_ENABLED)closeCard();}
 function initInteractive(){if(INIT)return;INIT=true;const lb=document.getElementById('lb');
   if(lb)lb.addEventListener('click',ev=>{const row=ev.target.closest('.lbrow');if(row&&row.dataset.p)openCard(decodeURIComponent(row.dataset.p),false);});
   document.addEventListener('keydown',ev=>{if(ev.key==='Escape')closeCard();});
