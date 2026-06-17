@@ -49,7 +49,10 @@ html,body{height:100%;background:var(--bg);color:var(--ink);font-family:'Manrope
 .lbhead div{font-size:10px;color:var(--faint);font-weight:600;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;}
 .lbhead .r,.lbrow .r{text-align:right;}
 .lbhead .c,.lbrow .c{text-align:center;}
-.lbbody{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:5px;padding-top:6px;}
+.lbbody{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:5px;padding-top:6px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#c7cfda transparent;}
+.lbbody::-webkit-scrollbar{width:8px;}
+.lbbody::-webkit-scrollbar-thumb{background:#c7cfda;border-radius:8px;}
+.lbbody::-webkit-scrollbar-track{background:transparent;}
 .lbrow{padding:7px 11px;border-radius:var(--rs);background:#fafbfc;border:1px solid var(--line);}
 .lbrow.lead{background:linear-gradient(90deg,var(--gold-soft),#fff);border-color:#f0d6a4;}
 .rk{font-size:15px;font-weight:800;color:var(--faint);text-align:center;}
@@ -207,6 +210,32 @@ html,body{height:100%;background:var(--bg);color:var(--ink);font-family:'Manrope
 .swrow .ok{margin-left:auto;color:var(--green);font-weight:800;}
 .swrow .miss{margin-left:auto;color:var(--red);font-weight:700;}
 @media (max-width:480px){.pc-cols{grid-template-columns:1fr;gap:6px;}.pgrid{grid-template-columns:1fr;}}
+
+/* ── stora skärmar / TV: skala upp rader så listan fyller ytan ── */
+@media (min-width:1500px) and (min-height:800px){
+  .lbrow{padding:11px 15px;}
+  .lbhead,.lbrow{gap:14px;}
+  .rk{font-size:17px;}
+  .nm{font-size:15.5px;}
+  .sub{font-size:13.5px;}
+  .sub small{font-size:9.5px;}
+  .tot{font-size:24px;}
+  .av{width:31px;height:31px;font-size:12px;}
+  .lbhead div{font-size:11px;}
+  .lb-note{font-size:11px;}
+}
+@media (min-width:1850px) and (min-height:950px){
+  .lbrow{padding:15px 18px;}
+  .lbhead,.lbrow{gap:16px;}
+  .rk{font-size:20px;}
+  .nm{font-size:18px;}
+  .sub{font-size:15px;}
+  .tot{font-size:28px;}
+  .totwrap .prog{font-size:15px;}
+  .av{width:36px;height:36px;font-size:14px;}
+  .lbhead div{font-size:12px;}
+  .ch h2{font-size:16px;}
+}
 </style>
 </head>
 <body>
@@ -298,7 +327,7 @@ const TAB_GRPF="GruppF";    // Grupp F-tabell (Apps Script fyller i)
 const TAB_SCORERS="Skytteliga"; // topp 5 målskyttar (Apps Script fyller i)
 const TAB_LEDARE="Ledare";      // aktuella gruppledare (Apps Script fyller i, driver prognosen)
 const IS_MOBILE=(typeof window!=='undefined'&&window.matchMedia&&window.matchMedia('(max-width:900px)').matches);
-const MAX_ROWS=IS_MOBILE?999:10;  // mobil: visa alla (scroll); TV: topp 10 + rullande nederkant
+const MAX_ROWS=10;  // tröskel för nederkantsrullning + tips; listan visar alla och är scrollbar
 
 const GROUPS={A:['Mexico','South Africa','South Korea','Czechia'],B:['Canada','Bosnia and Herzegovina','Qatar','Switzerland'],C:['Brazil','Morocco','Haiti','Scotland'],D:['USA','Paraguay','Australia','Türkiye'],E:['Germany','Curaçao','Ivory Coast','Ecuador'],F:['Netherlands','Japan','Sweden','Tunisia'],G:['Belgium','Egypt','Iran','New Zealand'],H:['Spain','Cape Verde','Saudi Arabia','Uruguay'],I:['France','Senegal','Iraq','Norway'],J:['Argentina','Algeria','Austria','Jordan'],K:['Portugal','DR Congo','Uzbekistan','Colombia'],L:['England','Croatia','Ghana','Panama']};
 const GK=Object.keys(GROUPS);
@@ -455,7 +484,7 @@ function render(D){
   const playedMap={};SWE_MATCHES.forEach((m,i)=>{const r=D.facit.swe&&D.facit.swe[SWKEYS[i]];if(r&&r.h!=null)playedMap[m.id]=r;});
   const rk=D.players.map(p=>{const s=calc(D,p);return{p,s,prog:prognos(D,p,s.total)};}).sort((a,b)=>b.s.total-a.s.total||b.prog-a.prog);
   const med=['🥇','🥈','🥉'];
-  const shown=rk.slice(0,MAX_ROWS);
+  const shown=rk; // alla rader – listan är scrollbar på dator/mobil
   document.getElementById('lb').innerHTML=shown.map((r,i)=>{const lead=i===0;
     return `<div class="lbrow ${lead?'lead':''}" data-p="${encodeURIComponent(r.p)}"><div class="rk">${med[i]||i+1}</div>
       <div class="who"><div class="av" style="background:${avc(r.p)}">${ini(r.p)}</div><div class="nm">${r.p}</div></div>
@@ -463,7 +492,7 @@ function render(D){
       <div class="sub">${r.s.sv}<small>av 9</small></div>
       <div class="sub">${r.s.sp}<small>${[r.s.wcOk?'VM':'',r.s.scOk?'⚽':''].filter(Boolean).join(' ')||'–'}</small></div>
       <div class="totwrap">${r.prog>r.s.total?`<span class="prog">${r.prog}</span>`:''}<span class="tot ${lead?'lead':''}">${r.s.total}</span></div></div>`;}).join('')||'<p class="dim" style="padding:8px">Inga deltagare ännu.</p>';
-  document.getElementById('more').textContent=rk.length>MAX_ROWS?`+ ${rk.length-MAX_ROWS} till – hela ställningen rullar nedan ↓`:'';
+  document.getElementById('more').textContent=rk.length>MAX_ROWS?`Scrolla i listan för alla ${rk.length} · hela ställningen rullar även nedan ↓`:'';
   document.getElementById('lb-hint').textContent=`${rk.length} deltagare`;
 
   nextSwe=SWE_MATCHES.filter(m=>!playedMap[m.id]&&m.dt>now)[0]||SWE_MATCHES.filter(m=>!playedMap[m.id])[0];
